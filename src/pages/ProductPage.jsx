@@ -39,7 +39,7 @@ function ProductPage() {
   const [celebrate, setCelebrate] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const sliderImages = ['/assets/poster1.jpg', '/assets/poster2.jpg', '/assets/poster3.jpg', '/assets/poster4.jpg']
+  const sliderImages = ['/public/images/poster1.jpg', '/public/images/poster2.jpg', 'public/images/poster3.jpg', 'public/images/poster4.jpg']
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % sliderImages.length)
@@ -696,4 +696,5 @@ function ProductPage() {
 }
 
 export default ProductPage
+
 
