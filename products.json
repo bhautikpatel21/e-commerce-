@@ -1,0 +1,368 @@
+[
+  {
+    "title": "White Polo Shirt",
+    "description": "Bright yellow polo shirt with collared neckline.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-MITOK-BK_1.jpg?format=webp&v=1763723221&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-MITOK-BK_2.jpg?format=webp&v=1763723220&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MITOK-BK_3.jpg?format=webp&v=1763723220&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MITOK-BK_4.jpg?format=webp&v=1763723221&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MITOK-BK_7.jpg?format=webp&v=1763723220&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "shirt",
+    "price": 59.99
+  },
+  {
+    "title": "Classic Black T-Shirt",
+    "description": "Slim-fit black cotton t-shirt ideal for everyday casual wear.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-MICOK-MR_1.jpg?format=webp&v=1757336440&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-MICOK-MR_2.jpg?format=webp&v=1757336440&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MICOK-MR_3.jpg?format=webp&v=1757336440&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MICOK-MR_4.jpg?format=webp&v=1757336440&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "t-shirt",
+    "price": 29.99
+  },
+  {
+    "title": "Oversized Grey Hoodie",
+    "description": "Comfortable oversized grey hoodie with drawstring hood and pockets.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-MIKOL-BR_1_2567f45a-7cf2-4d12-983c-0e23a893d0fd.jpg?format=webp&v=1757334747&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-MIKOL-BR_2_ef2f3def-9d8b-4a37-b219-fd55007181cc.jpg?format=webp&v=1757334747&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MIKOL-BR_3_6a1742bc-5220-4c90-b314-37e49bee44bd.jpg?format=webp&v=1757334747&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MIKOL-BR_4_d4edd4ae-d09b-4700-bac9-8dccfc01cd91.jpg?format=webp&v=1757334747&width=1800"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "hoodie",
+    "price": 79.99
+  },
+  {
+    "title": "White Oxford Shirt",
+    "description": "Crisp white oxford shirt for professional or smart casual outfits.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-TIMOK-CR_4.jpg?format=webp&v=1763988727&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-TIMOK-CR_6.jpg?format=webp&v=1763988727&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-TIMOK-CR_7.jpg?format=webp&v=1763988727&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "shirt",
+    "price": 69.99
+  },
+  {
+    "title": "Navy Crewneck T-Shirt",
+    "description": "Soft navy blue crewneck t-shirt with a relaxed fit.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-LOAK-WH_1.jpg?format=webp&v=1756799932&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOAK-WH_2.jpg?format=webp&v=1756799932&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOAK-WH_3.jpg?format=webp&v=1756799932&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOAK-WH_4.jpg?format=webp&v=1756799932&width=1800"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "category": "t-shirt",
+    "price": 34.99
+  },
+  {
+    "title": "Burgundy Zip Hoodie",
+    "description": "Full-zip burgundy hoodie with fleece lining for warmth.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-MENT-GY_1.jpg?format=webp&v=1756795109&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-MENT-GY_2.jpg?format=webp&v=1756795108&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MENT-GY_3.jpg?format=webp&v=1756795108&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-MENT-GY_4.jpg?format=webp&v=1756795108&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "hoodie",
+    "price": 89.99
+  },
+  {
+    "title": "Blue Denim Shirt",
+    "description": "Casual blue denim shirt with button-down front and pockets.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-PAGE-WH_2.jpg?format=webp&v=1763722260&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-PAGE-WH_3.jpg?format=webp&v=1763722260&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-PAGE-WH_4.jpg?format=webp&v=1763722260&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-PAGE-WH_6.jpg?format=webp&v=1763722260&width=1800"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "shirt",
+    "price": 64.99
+  },
+  {
+    "title": "Red Graphic T-Shirt",
+    "description": "Vibrant red t-shirt with minimalist graphic print.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/OLOT.jpg?format=webp&v=1762329922&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/DSC05577.jpg?format=webp&v=1762329960&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/DSC05652.jpg?format=webp&v=1762329960&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-OLOT-BG_1.jpg?format=webp&v=1762329960&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "t-shirt",
+    "price": 39.99
+  },
+  {
+    "title": "Olive Green Hoodie",
+    "description": "Earth-tone olive green hoodie with ribbed cuffs.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-LOPEDRO-BL_1.jpg?v=1757336688&width=1080",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOPEDRO-BL_2.jpg?format=webp&v=1757336688&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOPEDRO-BL_3.jpg?format=webp&v=1757336688&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOPEDRO-BL_5.jpg?format=webp&v=1757336689&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LOPEDRO-BL_6.jpg?format=webp&v=1757336689&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "category": "hoodie",
+    "price": 74.99
+  },
+  {
+    "title": "Striped Button Shirt",
+    "description": "Breathable striped cotton shirt for versatile styling.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_1.jpg?v=1757337067&width=1080",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_2.jpg?format=webp&v=1757337067&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_3.jpg?format=webp&v=1757337067&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_4.jpg?format=webp&v=1757337067&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_5.jpg?format=webp&v=1757337067&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "shirt",
+    "price": 54.99
+  },
+  {
+    "title": "Heather Blue T-Shirt",
+    "description": "Lightweight heather blue t-shirt for all-day comfort.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/KISARA.jpg?v=1757402495&width=1080",
+    "sideImages": [
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "https://thebearhouse.com/cdn/shop/files/TBH-NISHIO-BL_6.jpg?format=webp&v=1757337067&width=1800"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "t-shirt",
+    "price": 27.99
+  },
+  {
+    "title": "Camel Brown Hoodie",
+    "description": "Warm camel brown pullover hoodie with kangaroo pocket.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-BIKA-MC_1.jpg?v=1753865443&width=1080",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/KISARA3.jpg?format=webp&v=1757402495&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/KISARA2.jpg?format=webp&v=1757402495&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-KISARA-OL_1.jpg?format=webp&v=1757402495&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-KISARA-OL_2.jpg?format=webp&v=1757402495&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "hoodie",
+    "price": 84.99
+  },
+  {
+    "title": "Pink Linen Shirt",
+    "description": "Light pink linen shirt perfect for warm weather.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_1.jpg?v=1753864595&width=1080",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_2.jpg?format=webp&v=1753864596&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_3.jpg?format=webp&v=1753864596&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_4.jpg?format=webp&v=1753864596&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_5.jpg?format=webp&v=1753864596&width=1800"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "category": "shirt",
+    "price": 62.99
+  },
+  {
+    "title": "White V-Neck T-Shirt",
+    "description": "Clean white v-neck t-shirt in soft jersey fabric.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-CHEKA-MC_5.jpg?format=webp&v=1753864596&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-RELAN-MC_3.jpg?format=webp&v=1753864594&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-RELAN-MC_4.jpg?format=webp&v=1753864594&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-RELAN-MC_5.jpg?format=webp&v=1753864594&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "t-shirt",
+    "price": 24.99
+  },
+  {
+    "title": "Purple Oversized Hoodie",
+    "description": "Relaxed purple oversized hoodie for cozy layering.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-CHUGA-MR_1.jpg?format=webp&v=1757336003&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHUGA-MR_2.jpg?format=webp&v=1757336003&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHUGA-MR_3.jpg?format=webp&v=1757336003&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-CHUGA-MR_4.jpg?format=webp&v=1757336003&width=1800"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "hoodie",
+    "price": 94.99
+  },
+  {
+    "title": "Green Flannel Shirt",
+    "description": "Cozy green flannel shirt with long sleeves and plaid pattern.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/products/NILO.jpg?format=webp&v=1753868306&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/products/TBH-NILO-GR_2.jpg?format=webp&v=1753868306&width=1800",
+      "https://thebearhouse.com/cdn/shop/products/TBH-NILO-GR_3.jpg?format=webp&v=1753868306&width=1800",
+      "https://thebearhouse.com/cdn/shop/products/TBH-NILO-GR_4.jpg?format=webp&v=1753868306&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "shirt",
+    "price": 57.99
+  },
+  {
+    "title": "Long-Sleeve Grey T-Shirt",
+    "description": "Versatile long-sleeve grey t-shirt for cooler days.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-GLECH-MC_1.jpg?format=webp&v=1753864052&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-GLECH-MC_2.jpg?format=webp&v=1753864052&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-GLECH-MC_3.jpg?format=webp&v=1753864052&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-GLECH-MC_4.jpg?format=webp&v=1753864052&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-GLECH-MC_5.jpg?format=webp&v=1753864052&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "category": "t-shirt",
+    "price": 32.99
+  },
+  {
+    "title": "Teal Knit Hoodie",
+    "description": "Textured teal knit hoodie with hood and side pockets.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-LIDOS-YL_1.jpg?format=webp&v=1757337298&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-LIDOS-YL_2.jpg?format=webp&v=1757337298&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LIDOS-YL_3.jpg?format=webp&v=1757337298&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LIDOS-YL_4.jpg?format=webp&v=1757337298&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-LIDOS-YL_5.jpg?format=webp&v=1757337298&width=1800"
+    ],
+    "sizes": [
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "hoodie",
+    "price": 99.99
+  },
+  {
+    "title": "Maroon Pocket T-Shirt",
+    "description": "Maroon t-shirt with practical chest pocket detail.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TBH-KOGAT-BL_1.jpg?format=webp&v=1757335034&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TBH-KOGAT-BL_2.jpg?format=webp&v=1757335034&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-KOGAT-BL_3.jpg?format=webp&v=1757335034&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-KOGAT-BL_4.jpg?format=webp&v=1757335034&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TBH-KOGAT-BL_5.jpg?format=webp&v=1757335034&width=1800"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "category": "t-shirt",
+    "price": 36.99
+  },
+  {
+    "title": "Black Fleece Hoodie",
+    "description": "Warm black fleece hoodie for outdoor activities.",
+    "mainImage": "https://thebearhouse.com/cdn/shop/files/TSH-ETH-BK_1.jpg?format=webp&v=1757334899&width=1800",
+    "sideImages": [
+      "https://thebearhouse.com/cdn/shop/files/TSH-ETH-BK_6.jpg?format=webp&v=1757334900&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TSH-ETH-BK_5.jpg?format=webp&v=1757334900&width=1800",
+      "https://thebearhouse.com/cdn/shop/files/TSH-ETH-BK_4.jpg?format=webp&v=1757334900&width=1800"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "category": "hoodie",
+    "price": 89.99
+  }
+]
