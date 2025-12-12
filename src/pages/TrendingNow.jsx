@@ -7,7 +7,6 @@ import ScrollableProductImage from '../components/ScrollableProductImage'
 import '../App.css'
 import Toast from '../components/Toast'
 import Celebration from '../components/Celebration'
-import FridayOfferBanner from '../components/FridayOfferBanner'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
 
 function parseProductTitle(title) {
@@ -222,9 +221,6 @@ const TrendingNow = () => {
       >
         <p>TBH is better on the app · Flat ₹300 off on your first order</p>
       </marquee>
-
-      <FridayOfferBanner />
-
       <Navbar />
 
       <main>

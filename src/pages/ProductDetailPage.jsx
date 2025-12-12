@@ -5,7 +5,6 @@ import Review from '../components/Review'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
 import Celebration from '../components/Celebration'
-import FridayOfferBanner from '../components/FridayOfferBanner'
 import '../App.css'
 import { getProducts, addToCart, addToWishlist, getWishlist, removeFromWishlist } from '../Api'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
@@ -213,9 +212,11 @@ function ProductDetailPage() {
         <p>TBH is better on the app · Flat ₹300 off on your first order</p>
       </marquee>
 
-      <FridayOfferBanner />
-
       <Navbar />
+
+      <div className='w-12 h-12 bg-green-500'>
+        <h1>ojosfsf</h1>
+      </div>
 
       <main>
         {/* Product hero section (same style as featured product) */}

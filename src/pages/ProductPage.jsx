@@ -11,7 +11,6 @@ import { getProducts, getProductsByCategory } from '../Api'
 import Subcribe from '../components/Subcribe'
 import Toast from '../components/Toast'
 import Celebration from '../components/Celebration'
-import FridayOfferBanner from '../components/FridayOfferBanner'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
 
 function parseProductTitle(title) {
@@ -39,10 +38,28 @@ function ProductPage() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [celebrate, setCelebrate] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const sliderImages = ['/assets/poster1.jpg', '/assets/poster2.jpg', '/assets/poster3.jpg', '/assets/poster4.jpg']
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % sliderImages.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + sliderImages.length) % sliderImages.length)
+  }
 
   // Check if today is Friday on component mount
   useEffect(() => {
     setIsFridayDiscount(isFriday())
+  }, [])
+
+  // Auto-slide every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextImage()
+    }, 2000)
+    return () => clearInterval(interval)
   }, [])
 
   // Check for category in navigation state when component mounts or location changes
@@ -290,9 +307,32 @@ function ProductPage() {
         <p>TBH is better on the app · Flat ₹300 off on your first order</p>
       </marquee>
 
-      <FridayOfferBanner />
-
       <Navbar onSelectCategory={setSelectedCategory} />
+
+      {/* Image Slider */}
+      <div style={{ position: 'relative', width: '100%', height: '400px', overflow: 'hidden', marginBottom: '20px' }}>
+        <img
+          src={sliderImages[currentImageIndex]}
+          alt={`Poster ${currentImageIndex + 1}`}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px' }}>
+          {sliderImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                border: 'none',
+                background: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                cursor: 'pointer'
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
       <main>
         {/* If a category is selected from Navbar, show full-page Category view */}
@@ -304,150 +344,7 @@ function ProductPage() {
         ) : (
           <>
             {/* Featured product hero section (top of page) */}
-            {featuredProduct && (
-              <section className="hero fade-up">
-                {/* Left: all product images in a 2-column tall grid */}
-                <div
-                  className="product-hero-media"
-                  onClick={() => navigate(`/product/${featuredProduct._id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {featuredImages.map((img, index) => (
-                    <div key={img || index} className="product-hero-item">
-                      <img
-                        src={img}
-                        alt={`${featuredProduct.title} view ${index + 1}`}
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Right: Product information panel */}
-                <div className="product-panel">
-                  <p className="crumbs">
-                    The Bear House / Featured / Classic drop
-                  </p>
-                  {(() => {
-                    const { type, name } = parseProductTitle(featuredProduct.title);
-                    return type ? (
-                      <>
-                        <h1 className="title-type">{type}</h1>
-                        <p className="title-name">{name}</p>
-                      </>
-                    ) : (
-                      <h1>{name}</h1>
-                    );
-                  })()}
-                  <p className="subtitle">{featuredProduct.description}</p>
-
-                  <div className="price-row">
-                    {featuredProduct.price ? (
-                      isFridayDiscount ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <span className="price" style={{ textDecoration: 'line-through', color: '#999', fontSize: '1.8rem' }}>
-                            {formatPrice(featuredProduct.price)}
-                          </span>
-                          <span className="price" style={{ color: '#333' }}>
-                            {formatPrice(calculateDiscountedPrice(featuredProduct.price))}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="price">
-                          {formatPrice(featuredProduct.price)}
-                        </span>
-                      )
-                    ) : (
-                      <span className="price">Price not available</span>
-                    )}
-                    {isFridayDiscount && (
-                      <span className="label success" style={{ background: '#000', color: '#fff' }}>
-                        10% OFF
-                      </span>
-                    )}
-                    <span className="label success">
-                      Inclusive of all taxes
-                    </span>
-                    <span className="label outline">
-                      Free shipping above ₹500
-                    </span>
-                  </div>
-
-                  <div className="thumb-row">
-                    {featuredImages.map((img, index) => (
-                      <button
-                        key={img || index}
-                        type="button"
-                        className="thumb-circle"
-                      >
-                        <img
-                          src={img}
-                          alt={`${featuredProduct.title} thumb ${
-                            index + 1
-                          }`}
-                          loading="lazy"
-                        />
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="size-selector">
-                    <div className="selector-header">
-                      <span className="crumbs">Size</span>
-                      <button type="button" className="ghost tiny">
-                        Size chart
-                      </button>
-                    </div>
-                    <div className="size-grid">
-                      {featuredProduct.sizes.map((size) => (
-                        <button 
-                          key={size} 
-                          type="button" 
-                          onClick={() => setSelectedSize(size)}
-                          className={`size-pill ${selectedSize === size ? 'selected' : ''}`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="cta-stack w-full flex justify-center items-center" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <button type="button" className="primary w-full" onClick={(e) => { e.stopPropagation(); handleAddToCart(featuredProduct); }}>
-                      Add to Cart
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleWishlistToggle(featuredProduct._id); }}
-                      style={{
-                        background: 'transparent',
-                        border: '1px solid #333',
-                        borderRadius: '50%',
-                        width: '52px',
-                        height: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        fontSize: '20px',
-                        color: wishlistedItems.includes(featuredProduct._id) ? '#e91e63' : '#333',
-                        transition: 'all 0.3s ease',
-                      }}
-                      title={wishlistedItems.includes(featuredProduct._id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                    >
-                      {wishlistedItems.includes(featuredProduct._id) ? '❤️' : '♡'}
-                    </button>
-                  </div>
-
-                  <p className="status-copy">
-                    Crafted for everyday comfort. Ships in 2–4 business days
-                    from our Bengaluru studio.
-                  </p>
-                </div>
-              </section>
-            )}
-
-            <Review />
+            
 
             {/* Shirt Section */}
             <div style={{ marginBottom: '60px' }}>
@@ -524,7 +421,7 @@ function ProductPage() {
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
-                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1.2em', textAlign: 'center' }}>
+                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1em', textAlign: 'center' }}>
                                 {type ? <span className="title-type">{type}</span> : null}
                                 <span className="title-name">{name}</span>
                               </div>
@@ -614,7 +511,7 @@ function ProductPage() {
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
-                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1.2em', textAlign: 'center' }}>
+                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1em', textAlign: 'center' }}>
                                 {type ? <span className="title-type">{type}</span> : null}
                                 <span className="title-name">{name}</span>
                               </div>
@@ -704,7 +601,7 @@ function ProductPage() {
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
-                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1.2em', textAlign: 'center' }}>
+                              <div className="product-title" style={{ margin: '10px 0', fontSize: '1em', textAlign: 'center' }}>
                                 {type ? <span className="title-type">{type}</span> : null}
                                 <span className="title-name">{name}</span>
                               </div>
@@ -769,7 +666,7 @@ function ProductPage() {
                         {(() => {
                           const { type, name } = parseProductTitle(product.title);
                           return (
-                            <div className="product-title" style={{ margin: '10px 0', fontSize: '1.2em', textAlign: 'center' }}>
+                            <div className="product-title" style={{ margin: '10px 0', fontSize: '1em', textAlign: 'center' }}>
                               {type ? <span className="title-type">{type}</span> : null}
                               <span className="title-name">{name}</span>
                             </div>

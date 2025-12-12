@@ -241,313 +241,322 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
   }
 
   return (
-    <header className={`site-header fade-down ${isMenuOpen ? 'menu-open' : ''}`}>
-      <button 
-        className="hamburger" 
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        aria-label="Toggle menu"
-      >
-        ☰
-      </button>
-      <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
-        {navItems.map((item) => {
-          if (item === 'Shop All') {
-            return (
-              <div
-                key={item}
-                className="nav-item shop-all-wrapper"
-                onMouseEnter={() => setIsShopDropdownOpen(true)}
-                onMouseLeave={() => setIsShopDropdownOpen(false)}
-              >
-                <button
-                  type="button"
-                  className="link-like-button"
-                  onClick={() => handleCategoryClick('all')}
-                >
-                  {item}
-                </button>
-
-                {isShopDropdownOpen && (
-                  <div className="shop-dropdown">
-                    {shopCategories.map((cat) => (
-                      <button
-                        key={cat.value}
-                        type="button"
-                        className="shop-dropdown-item"
-                        onClick={() => handleCategoryClick(cat.value)}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          }
-
-          if (item === 'Home Page') {
-            return (
-              <Link to="/" key={item} className="nav-item">
-                {item}
-              </Link>
-            )
-          }
-
-          if (item === 'New Arrivals') {
-            return (
-              <Link to="/newarrival" key={item} className="nav-item">
-                {item}
-              </Link>
-            )
-          }
-
-          if (item === 'Trending Now') {
-            return (
-              <Link to="/trendingnow" key={item} className="nav-item">
-                {item}
-              </Link>
-            )
-          }
-
-          return (
-            <a href="#" key={item} className="nav-item">
-              {item}
-            </a>
-          )
-        })}
-      </nav>
-      <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-        <img src="/Logo.svg" alt="The Bear House Logo" />
-      </div>
-      <div className="header-actions">
-        {/* Search icon */}
-        <div ref={searchRef} style={{ position: 'relative' }}>
-          <button
-            type="button"
-            aria-label="Search"
-            className="header-icon-button"
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
+    <header className={`site-header fade-down ${isMenuOpen ? 'menu-open' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', width: '100%' }}>
+      <div className="left-section" style={{ display: 'flex', alignItems: 'center' }}>
+        {isMobile && (
+          <button 
+            className="hamburger" 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+            style={{ marginRight: '1rem' }}
           >
-            <span className="header-icon-symbol">🔍</span>
+            ☰
           </button>
-          
-          {/* Mobile search backdrop */}
-          {isMobile && isSearchOpen && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.5)',
-                zIndex: 998,
-              }}
-              onClick={() => setIsSearchOpen(false)}
-            />
-          )}
-          
-          {/* Search dropdown */}
-          {isSearchOpen && (
-            <div
-              style={isMobile ? {
-                position: 'fixed',
-                top: '4rem',
-                left: 0,
-                right: 0,
-                width: '100vw',
-                background: 'white',
-                borderRadius: '0 0 8px 8px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                zIndex: 999,
-                padding: '20px',
-              } : {
-                position: 'absolute',
-                top: '100%',
-                right: '0',
-                marginTop: '10px',
-                width: '400px',
-                maxWidth: '90vw',
-                background: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                zIndex: 1000,
-                padding: '20px',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={handleSearchInputChange}
-                autoFocus
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  outline: 'none',
-                }}
-              />
-              
-              {/* Search Results */}
-              {searchQuery.trim() && (
-                <div
-                  style={{
-                    maxHeight: isMobile ? 'calc(100vh - 8rem)' : '400px',
-                    overflowY: 'auto',
-                    marginTop: '15px',
-                  }}
-                >
-                  {isSearching ? (
-                    <div style={{ textAlign: 'center', padding: '20px' }}>
-                      <p>Searching...</p>
-                    </div>
-                  ) : searchResults.length > 0 ? (
-                    <div>
-                      <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-                        {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
-                      </p>
-                      {searchResults.map((product, index) => (
-                        <div
-                          key={product._id || index}
-                          onClick={() => handleSearchResultClick(product)}
-                          style={{
-                            display: 'flex',
-                            gap: '16px',
-                            padding: '10px',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid #eee',
-                            transition: 'background 0.2s',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#f5f5f5'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'white'
-                          }}
-                        >
-                          <img
-                            src={product.mainImage}
-                            alt={product.title}
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              objectFit: 'cover',
-                              borderRadius: '4px',
-                            }}
-                          />
-                          <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
-                              {product.title}
-                            </h4>
-                            <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#333' }}>
-                              {product.price ? `₹${(product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'Price not available'}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-                      <p>No products found</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        )}
+        {!isMobile && (
+          <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
+            {navItems.map((item) => {
+              if (item === 'Shop All') {
+                return (
+                  <div
+                    key={item}
+                    className="nav-item shop-all-wrapper"
+                    onMouseEnter={() => setIsShopDropdownOpen(true)}
+                    onMouseLeave={() => setIsShopDropdownOpen(false)}
+                  >
+                    <button
+                      type="button"
+                      className="link-like-button"
+                      onClick={() => handleCategoryClick('all')}
+                    >
+                      {item}
+                    </button>
 
-        {/* Wishlist icon with count like provided image */}
-        <button
-          type="button"
-          aria-label="Wishlist"
-          className="header-icon-button"
-          onClick={() => navigate('/wishlist')}
-        >
-          <span className="header-icon-symbol wishlist-icon">♡</span>
-          <span className="header-count-circle -ml-2">{wishlistCount}</span>
-        </button>
+                    {isShopDropdownOpen && (
+                      <div className="shop-dropdown">
+                        {shopCategories.map((cat) => (
+                          <button
+                            key={cat.value}
+                            type="button"
+                            className="shop-dropdown-item"
+                            onClick={() => handleCategoryClick(cat.value)}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
 
-        {/* Cart icon with count like provided image */}
-        <button
-          type="button"
-          aria-label="Cart"
-          className="header-icon-button"
-          onClick={() => navigate('/cart')}
-        >
-          <span className="header-icon-symbol">🛒</span>
-          <span className="header-count-circle -ml-2">{cartCount}</span>
-        </button>
+              if (item === 'Home Page') {
+                return (
+                  <Link to="/" key={item} className="nav-item">
+                    {item}
+                  </Link>
+                )
+              }
 
-        {/* User/Login icon */}
-        {isLoggedIn ? (
-          <div ref={userRef} style={{ position: 'relative' }}>
+              if (item === 'New Arrivals') {
+                return (
+                  <Link to="/newarrival" key={item} className="nav-item">
+                    {item}
+                  </Link>
+                )
+              }
+
+              if (item === 'Trending Now') {
+                return (
+                  <Link to="/trendingnow" key={item} className="nav-item">
+                    {item}
+                  </Link>
+                )
+              }
+
+              return (
+                <a href="#" key={item} className="nav-item">
+                  {item}
+                </a>
+              )
+            })}
+          </nav>
+        )}
+      </div>
+      <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', flex: '1', textAlign: 'center' }}>
+        <img src="/Logo.svg" alt="The Bear House Logo" style={{ maxWidth: '150px', height: 'auto' }} />
+      </div>
+      <div className="right-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="header-actions">
+          {/* Search icon */}
+          <div ref={searchRef} style={{ position: 'relative' }}>
             <button
               type="button"
-              aria-label="User menu"
+              aria-label="Search"
               className="header-icon-button"
-              onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
-              <span
-                className="header-icon-symbol"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: 'red',
-                  color: 'white',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {userName.charAt(0).toUpperCase()}
-              </span>
+              <span className="header-icon-symbol">🔍</span>
             </button>
-            {isUserDropdownOpen && (
+            
+            {/* Mobile search backdrop */}
+            {isMobile && isSearchOpen && (
               <div
                 style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.5)',
+                  zIndex: 998,
+                }}
+                onClick={() => setIsSearchOpen(false)}
+              />
+            )}
+            
+            {/* Search dropdown */}
+            {isSearchOpen && (
+              <div
+                style={isMobile ? {
+                  position: 'fixed',
+                  top: '4rem',
+                  left: 0,
+                  right: 0,
+                  width: '100vw',
+                  background: 'white',
+                  borderRadius: '0 0 8px 8px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  zIndex: 999,
+                  padding: '20px',
+                } : {
                   position: 'absolute',
                   top: '100%',
-                  right: 0,
+                  right: '0',
                   marginTop: '10px',
+                  width: '400px',
+                  maxWidth: '90vw',
                   background: 'white',
                   borderRadius: '8px',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                   zIndex: 1000,
-                  padding: '10px',
+                  padding: '20px',
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
-                  onClick={handleLogout}
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
+                  autoFocus
                   style={{
                     width: '100%',
-                    padding: '0 8px',
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                    textAlign: 'left',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    outline: 'none',
                   }}
-                >
-                  Logout
-                </button>
+                />
+                
+                {/* Search Results */}
+                {searchQuery.trim() && (
+                  <div
+                    style={{
+                      maxHeight: isMobile ? 'calc(100vh - 8rem)' : '400px',
+                      overflowY: 'auto',
+                      marginTop: '15px',
+                    }}
+                  >
+                    {isSearching ? (
+                      <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <p>Searching...</p>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div>
+                        <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                          {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
+                        </p>
+                        {searchResults.map((product, index) => (
+                          <div
+                            key={product._id || index}
+                            onClick={() => handleSearchResultClick(product)}
+                            style={{
+                              display: 'flex',
+                              gap: '16px',
+                              padding: '10px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #eee',
+                              transition: 'background 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#f5f5f5'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'white'
+                            }}
+                          >
+                            <img
+                              src={product.mainImage}
+                              alt={product.title}
+                              style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'cover',
+                                borderRadius: '4px',
+                              }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
+                                {product.title}
+                              </h4>
+                              <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#333' }}>
+                                {product.price ? `₹${(product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'Price not available'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                        <p>No products found</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        ) : (
+
+          {/* Wishlist icon with count like provided image */}
           <button
             type="button"
-            aria-label="Login"
+            aria-label="Wishlist"
             className="header-icon-button"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/wishlist')}
           >
-            <span className="header-icon-symbol">👤</span>
+            <span className="header-icon-symbol wishlist-icon">♡</span>
+            <span className="header-count-circle -ml-2">{wishlistCount}</span>
           </button>
-        )}
+
+          {/* Cart icon with count like provided image */}
+          <button
+            type="button"
+            aria-label="Cart"
+            className="header-icon-button"
+            onClick={() => navigate('/cart')}
+          >
+            <span className="header-icon-symbol">🛒</span>
+            <span className="header-count-circle -ml-2">{cartCount}</span>
+          </button>
+
+          {/* User/Login icon */}
+          {isLoggedIn ? (
+            <div ref={userRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                aria-label="User menu"
+                className="header-icon-button"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+              >
+                <span
+                  className="header-icon-symbol"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    backgroundColor: 'red',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              </button>
+              {isUserDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '10px',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    padding: '10px',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      width: '100%',
+                      padding: '0 8px',
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label="Login"
+              className="header-icon-button"
+              onClick={() => navigate('/login')}
+            >
+              <span className="header-icon-symbol">👤</span>
+            </button>
+          )}
+        </div>
       </div>
       {isMenuOpen && (
         <div

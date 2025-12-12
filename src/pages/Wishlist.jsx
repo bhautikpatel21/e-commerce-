@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
-import FridayOfferBanner from '../components/FridayOfferBanner'
 import ScrollableProductImage from '../components/ScrollableProductImage'
 import { getWishlist, removeFromWishlist } from '../Api'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
@@ -112,8 +111,6 @@ const Wishlist = () => {
       >
         <p>TBH is better on the app · Flat ₹300 off on your first order</p>
       </marquee>
-
-      <FridayOfferBanner />
 
       <Navbar />
 
