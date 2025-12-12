@@ -1001,8 +1001,8 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    gap: 0.25rem;
     position: fixed;
     top: 0;
     left: 0;
@@ -1028,6 +1028,7 @@ main {
     color: #111322;
     padding: 0.25rem;
     z-index: 1200;
+    margin-right: 0.25rem;
   }
 
   /* Hide desktop nav completely on mobile so it doesn't overlap with the mobile menu */
@@ -1045,13 +1046,35 @@ main {
     max-height: 32px;
   }
 
-  .header-actions {
+  .right-section {
     gap: 0.25rem;
   }
 
+  .header-actions {
+    gap: 0.125rem;
+    overflow: hidden;
+  }
+
+  .header-icon-button {
+    padding: 0.125rem;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .header-icon-symbol {
+    font-size: 1rem;
+  }
+
+  .header-count-circle {
+    min-width: 12px;
+    height: 12px;
+    font-size: 9px;
+    padding: 0 3px;
+  }
+
   .ghost {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
   }
 
   .mobile-menu-overlay {
@@ -1126,6 +1149,44 @@ main {
 
   .mobile-nav a:last-child {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .hamburger {
+    font-size: 1.25rem;
+    padding: 0.125rem;
+  }
+
+  .logo img {
+    max-height: 28px;
+  }
+
+  .right-section {
+    gap: 0.125rem;
+  }
+
+  .header-actions {
+    gap: 0.0625rem;
+  }
+
+  .header-icon-button {
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .header-icon-symbol {
+    font-size: 0.9rem;
+  }
+
+  .header-count-circle {
+    min-width: 10px;
+    height: 10px;
+    font-size: 8px;
   }
 }
 
@@ -1672,4 +1733,3 @@ main {
     font-size: 0.9rem;
   }
 }
-
