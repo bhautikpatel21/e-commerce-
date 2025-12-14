@@ -209,24 +209,46 @@ const Cart = () => {
                     <img
                       src={item.product.mainImage}
                       alt={item.product.title}
+                      className="cart-item-img"
                       style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px' }}
                     />
                   </div>
                   <div className="cart-item-details" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                       <div className="cart-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
-                        <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '500', flex: 1 }}>{item.product.title}</h3>
-                        <p className="cart-item-price-mobile" style={{
-                          margin: '0',
-                          fontWeight: 'bold',
-                          fontSize: '18px',
-                          color: '#333',
-                          display: 'none'
-                        }}>
-                          {isFridayDiscount ? formatPrice(calculateDiscountedPrice(item.product.price) * item.quantity) : formatPrice(item.product.price * item.quantity)}
-                        </p>
+                        <div className="cart-item-title-section">
+                          <h3 className="cart-item-title" style={{ margin: '0', fontSize: '16px', fontWeight: '500', flex: 1 }}>{item.product.title}</h3>
+                          <p className="cart-item-price-mobile" style={{
+                            margin: '4px 0 0 0',
+                            fontWeight: 'bold',
+                            fontSize: '16px',
+                            color: '#333',
+                            display: 'none'
+                          }}>
+                            {isFridayDiscount ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                                <span style={{
+                                  fontSize: '12px',
+                                  color: '#999',
+                                  textDecoration: 'line-through'
+                                }}>
+                                  {formatPrice(item.product.price * item.quantity)}
+                                </span>
+                                <span style={{
+                                  fontWeight: 'bold',
+                                  fontSize: '16px',
+                                  color: '#333'
+                                }}>
+                                  {formatPrice(calculateDiscountedPrice(item.product.price) * item.quantity)}
+                                </span>
+                              </div>
+                            ) : (
+                              formatPrice(item.product.price * item.quantity)
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <div style={{ marginBottom: '8px' }}>
+                      <div className="cart-size-section" style={{ marginBottom: '8px' }}>
                         <select 
                           value={item.size} 
                           onChange={(e) => handleSizeChange(item._id, e.target.value)}
@@ -252,9 +274,10 @@ const Cart = () => {
                       </div>
                     </div>
                     <div className="cart-item-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '4px' }}>
+                      <div className="cart-quantity-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '4px' }}>
                         <button
                           onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
+                          className="qty-minus"
                           style={{ 
                             background: 'none', 
                             border: 'none', 
@@ -267,9 +290,10 @@ const Cart = () => {
                         >
                           −
                         </button>
-                        <span style={{ minWidth: '20px', textAlign: 'center', fontWeight: '500' }}>{item.quantity}</span>
+                        <span className="qty-value" style={{ minWidth: '20px', textAlign: 'center', fontWeight: '500' }}>{item.quantity}</span>
                         <button
                           onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
+                          className="qty-plus"
                           style={{ 
                             background: 'none', 
                             border: 'none', 
@@ -282,23 +306,22 @@ const Cart = () => {
                         >
                           +
                         </button>
-                        <button
-                          onClick={() => handleRemove(item._id)}
-                          className="cart-delete-btn"
-                          style={{ 
-                            background: 'none', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            fontSize: '18px', 
-                            color: '#dc3545',
-                            padding: '4px 8px',
-                            marginLeft: '8px'
-                          }}
-                          title="Remove item"
-                        >
-                          🗑️
-                        </button>
                       </div>
+                      <button
+                        onClick={() => handleRemove(item._id)}
+                        className="cart-delete-btn"
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          fontSize: '18px', 
+                          color: '#dc3545',
+                          padding: '4px 8px'
+                        }}
+                        title="Remove item"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                   <div className="cart-item-price-desktop" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', minWidth: '100px' }}>

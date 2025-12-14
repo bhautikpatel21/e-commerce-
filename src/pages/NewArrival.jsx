@@ -292,11 +292,6 @@ const NewArrival = () => {
         )}
       </main>
 
-      <footer className="site-footer fade-up mb-4">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
-      </footer>
-
       <Footer />
     </div>
   )

@@ -40,13 +40,9 @@ function ProductPage() {
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const sliderImages = ['/images/poster1.jpg', '/images/poster2.jpg', '/images/poster3.jpg', '/images/poster4.jpg']
-  
+
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % sliderImages.length)
-  }
-
-  const prevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + sliderImages.length) % sliderImages.length)
   }
 
   // Check if today is Friday on component mount
@@ -74,7 +70,7 @@ function ProductPage() {
   // Helper function to render product price with discount
   const renderProductPrice = (product) => {
     if (!product.price) return <p style={{ fontSize: '1.1em', fontWeight: 'bold', color: '#333' }}>Price not available</p>
-    
+
     if (isFridayDiscount) {
       const discountedPriceUSD = calculateDiscountedPrice(product.price)
       return (
@@ -134,64 +130,6 @@ function ProductPage() {
     fetchWishlist()
   }, [])
 
-  const handleAddToCart = async (product) => {
-    if (!selectedSize) {
-      setToast({ show: true, message: 'Please select a size', type: 'error' });
-      return;
-    }
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setToast({ show: true, message: 'Please login first', type: 'error' });
-      return;
-    }
-    try {
-      await addToCart(product._id, 1, selectedSize, token);
-      setToast({ show: true, message: `Added ${product.title} size ${selectedSize} to cart`, type: 'success' });
-      // Dispatch event to update navbar count
-      window.dispatchEvent(new Event('cartChanged'))
-      // Trigger celebration animation
-      setCelebrate(Date.now())
-    } catch (error) {
-      setToast({ show: true, message: 'Error adding to cart: ' + error.message, type: 'error' });
-    }
-  }
-
-  const handleWishlistToggle = async (productId) => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      setToast({ show: true, message: 'Please login to manage wishlist', type: 'error' })
-      return
-    }
-
-    const isCurrentlyWishlisted = wishlistedItems.includes(productId)
-    try {
-      let response
-      if (isCurrentlyWishlisted) {
-        response = await removeFromWishlist(productId, token)
-        if (response.isSuccess) {
-          setWishlistedItems(prev => prev.filter(id => id !== productId))
-          setToast({ show: true, message: 'Removed from wishlist', type: 'success' })
-          // Dispatch event to update navbar count
-          window.dispatchEvent(new Event('wishlistChanged'))
-        } else {
-          setToast({ show: true, message: 'Failed to remove from wishlist', type: 'error' })
-        }
-      } else {
-        response = await addToWishlist(productId, token)
-        if (response.isSuccess) {
-          setWishlistedItems(prev => [...prev, productId])
-          setToast({ show: true, message: 'Added to wishlist', type: 'success' })
-          // Dispatch event to update navbar count
-          window.dispatchEvent(new Event('wishlistChanged'))
-        } else {
-          setToast({ show: true, message: 'Failed to add to wishlist', type: 'error' })
-        }
-      }
-    } catch (err) {
-      setToast({ show: true, message: 'Error updating wishlist', type: 'error' })
-    }
-  }
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -217,13 +155,13 @@ function ProductPage() {
     if (productsData.length > 0) {
       const stored = localStorage.getItem('recentlyViewed')
       const recentlyViewedIds = stored ? JSON.parse(stored) : []
-      
+
       // Get recently viewed products from productsData
       const recentlyViewedProducts = recentlyViewedIds
         .map(id => productsData.find(p => p._id === id))
         .filter(p => p !== undefined)
         .slice(0, 5) // Limit to 5 products
-      
+
       setRecentlyViewed(recentlyViewedProducts)
     }
   }, [productsData])
@@ -232,15 +170,15 @@ function ProductPage() {
     const fetchCategoryProducts = async () => {
       try {
         setCategoryLoading(true)
-        
+
         // Fetch shirt products
-        const shirtResponse = await getProductsByCategory('shirt', 1, 6)
+        const shirtResponse = await getProductsByCategory('shirt', 1, 8)
         if (shirtResponse.isSuccess && shirtResponse.data) {
           setShirtProducts(Array.isArray(shirtResponse.data) ? shirtResponse.data : shirtResponse.data.products || [])
         }
 
         // Fetch t-shirt products
-        const tshirtResponse = await getProductsByCategory('t-shirt', 1, 6)
+        const tshirtResponse = await getProductsByCategory('t-shirt', 1, 8)
         if (tshirtResponse.isSuccess && tshirtResponse.data) {
           setTshirtProducts(Array.isArray(tshirtResponse.data) ? tshirtResponse.data : tshirtResponse.data.products || [])
         }
@@ -283,9 +221,9 @@ function ProductPage() {
   const featuredProduct = productsData[0]
   const featuredImages = featuredProduct
     ? [
-        featuredProduct.mainImage,
-        ...(featuredProduct.sideImages || []).slice(0, 3),
-      ]
+      featuredProduct.mainImage,
+      ...(featuredProduct.sideImages || []).slice(0, 3),
+    ]
     : []
 
   return (
@@ -310,7 +248,7 @@ function ProductPage() {
       <Navbar onSelectCategory={setSelectedCategory} />
 
       {/* Image Slider */}
-      <div style={{ position: 'relative', width: '100%', height: '400px', overflow: 'hidden', marginBottom: '20px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '500px', overflow: 'hidden', marginBottom: '20px' }}>
         <img
           src={sliderImages[currentImageIndex]}
           alt={`Poster ${currentImageIndex + 1}`}
@@ -334,6 +272,16 @@ function ProductPage() {
         </div>
       </div>
 
+      <div style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '20px', borderRadius: '8px', margin: '20px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+          <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>👕</span>
+          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Made with Premium Fabric</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+          <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>🚚</span>
+          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Shipping within 24 hours</p>
+        </div>
+      </div>
       <main>
         {/* If a category is selected from Navbar, show full-page Category view */}
         {selectedCategory ? (
@@ -344,10 +292,10 @@ function ProductPage() {
         ) : (
           <>
             {/* Featured product hero section (top of page) */}
-            
+
 
             {/* Shirt Section */}
-            <div style={{ marginBottom: '60px' }}>
+            <div style={{ marginBottom: '20px' }}>
               <h2
                 className="category-section-title"
                 style={{
@@ -362,7 +310,7 @@ function ProductPage() {
                 }}
                 onClick={() => setSelectedCategory('shirt')}
               >
-                Shirt
+                our collections
               </h2>
               <img
                 src="/images/shirt.webp"
@@ -403,7 +351,7 @@ function ProductPage() {
                         className="product-card"
                         style={{
                           textAlign: 'center',
-                          border: '1px solid #eee',
+                          border: '1px solid black',
                           borderRadius: '8px',
                           overflow: 'hidden',
                           background: 'white',
@@ -417,7 +365,7 @@ function ProductPage() {
                           productId={`shirt-${index}`}
                           showDiscountBadge={isFridayDiscount}
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid black', paddingTop: '10px' }}>
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
@@ -432,12 +380,35 @@ function ProductPage() {
                       </div>
                     ))}
                   </section>
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button className='bg-gray-700'
+                      onClick={() => setSelectedCategory('t-shirt')}
+                      style={{
+                        padding: '10px 30px',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '1em',
+                      }}
+                    >
+                      View More
+                    </button>
+                  </div>
                 </>
               )}
             </div>
 
+            {/* Promotional Banner Section */}
+            <div style={{ textAlign: 'center', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', margin: '0 auto 20px' }}>
+              <h3 style={{ fontSize: '1.2em', margin: '0 0 15px 0' }}>Make Way for New Drip</h3>
+              <h2 style={{ fontSize: '1.5em', fontWeight: 'bold', margin: '0 0 10px 0', textTransform: 'uppercase' }}>Explore the Season's New Styles</h2>
+              <p style={{ fontSize: '1.2em', fontWeight: 'bold', margin: '0 0 10px 0' }}>Extra 10% on Orders Above $2599</p>
+              <p style={{ fontSize: '0.9em', color: '#666', margin: '0' }}>Discount auto-applied at checkout | Exclusions apply</p>
+            </div>
+
             {/* T-shirt Section */}
-            <div style={{ marginBottom: '60px' }}>
+            <div style={{ marginBottom: '20px' }}>
               <h2
                 className="category-section-title"
                 style={{
@@ -493,7 +464,7 @@ function ProductPage() {
                         className="product-card"
                         style={{
                           textAlign: 'center',
-                          border: '1px solid #eee',
+                          border: '1px solid black',
                           borderRadius: '8px',
                           overflow: 'hidden',
                           background: 'white',
@@ -507,7 +478,7 @@ function ProductPage() {
                           productId={`tshirt-${index}`}
                           showDiscountBadge={isFridayDiscount}
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid black', paddingTop: '10px' }}>
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
@@ -522,8 +493,38 @@ function ProductPage() {
                       </div>
                     ))}
                   </section>
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button className='bg-gray-700'
+                      onClick={() => setSelectedCategory('t-shirt')}
+                      style={{
+                        padding: '10px 30px',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '1em',
+                      }}
+                    >
+                      View More
+                    </button>
+                  </div>
                 </>
               )}
+            </div>
+
+            <div style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '5px', borderRadius: '8px', margin: '20px 0' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>👕</span>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Made with Premium Fabric</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}> 💸 </span>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>7 Days Easy Return & Exchange</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>🚚</span>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Shipping within 24 hours</p>
+              </div>
             </div>
 
             {/* Hoodie Section */}
@@ -583,7 +584,7 @@ function ProductPage() {
                         className="product-card"
                         style={{
                           textAlign: 'center',
-                          border: '1px solid #eee',
+                          border: '1px solid black',
                           borderRadius: '8px',
                           overflow: 'hidden',
                           background: 'white',
@@ -597,7 +598,7 @@ function ProductPage() {
                           productId={`hoodie-${index}`}
                           showDiscountBadge={isFridayDiscount}
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid black', paddingTop: '10px' }}>
                           {(() => {
                             const { type, name } = parseProductTitle(product.title);
                             return (
@@ -612,6 +613,21 @@ function ProductPage() {
                       </div>
                     ))}
                   </section>
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button className='bg-gray-700'
+                      onClick={() => setSelectedCategory('t-shirt')}
+                      style={{
+                        padding: '10px 30px',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '1em',
+                      }}
+                    >
+                      View More
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -648,7 +664,7 @@ function ProductPage() {
                       className="product-card"
                       style={{
                         textAlign: 'center',
-                        border: '1px solid #eee',
+                        border: '1px solid black',
                         borderRadius: '8px',
                         overflow: 'hidden',
                         background: 'white',
@@ -662,7 +678,7 @@ function ProductPage() {
                         productId={`recent-${index}`}
                         showDiscountBadge={isFridayDiscount}
                       />
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid black', paddingTop: '10px' }}>
                         {(() => {
                           const { type, name } = parseProductTitle(product.title);
                           return (
@@ -685,7 +701,7 @@ function ProductPage() {
         )}
       </main>
 
-      <footer className="site-footer fade-up mb-4">
+      <footer className="site-footer fade-up">
         <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
         <small>Reference design inspired by MITOK product page on The Bear House</small>
       </footer>
@@ -696,6 +712,3 @@ function ProductPage() {
 }
 
 export default ProductPage
-
-
-

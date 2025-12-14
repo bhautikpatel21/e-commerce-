@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
@@ -6,7 +7,7 @@ import Footer from '../components/Footer'
 import Toast from '../components/Toast'
 import Celebration from '../components/Celebration'
 import '../App.css'
-import { getProducts, addToCart, addToWishlist, getWishlist, removeFromWishlist } from '../Api'
+import { getProducts, addToCart, addToWishlist, getWishlist, removeFromWishlist, getProductReviews } from '../Api'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
 
 function ProductDetailPage() {
@@ -21,6 +22,7 @@ function ProductDetailPage() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [celebrate, setCelebrate] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
+  const [reviews, setReviews] = useState([])
 
   // Check if today is Friday on component mount
   useEffect(() => {
@@ -79,20 +81,37 @@ function ProductDetailPage() {
       // Get existing recently viewed from localStorage
       const stored = localStorage.getItem('recentlyViewed')
       let recentlyViewedIds = stored ? JSON.parse(stored) : []
-      
+
       // Remove current product if it exists in the list
       recentlyViewedIds = recentlyViewedIds.filter(id => id !== product._id)
-      
+
       // Add current product to the beginning
       recentlyViewedIds.unshift(product._id)
-      
+
       // Keep only the last 5 products
       recentlyViewedIds = recentlyViewedIds.slice(0, 5)
-      
+
       // Save back to localStorage
       localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewedIds))
     }
   }, [product])
+
+  // Fetch reviews for the product
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!productId) return
+      try {
+        const response = await getProductReviews(productId)
+        if (response.isSuccess && response.data) {
+          setReviews(response.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err)
+      }
+    }
+
+    fetchReviews()
+  }, [productId])
 
   useEffect(() => {
     if (!loading && !product) {
@@ -129,6 +148,60 @@ function ProductDetailPage() {
     product.mainImage,
     ...(product.sideImages || []).slice(0, 3),
   ]
+
+  const calculateAverageRating = () => {
+    if (reviews.length === 0) return 0
+    const sum = reviews.reduce((acc, review) => acc + (review.rating || 0), 0)
+    return sum / reviews.length
+  }
+
+  const renderStars = (ratingValue) => {
+    const fullStars = Math.floor(ratingValue)
+    const hasHalfStar = ratingValue % 1 >= 0.5
+    const starPath = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => {
+          if (star <= fullStars) {
+            // Full star
+            return (
+              <svg key={star} className="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d={starPath} />
+              </svg>
+            )
+          } else if (star === fullStars + 1 && hasHalfStar) {
+            // Half star
+            return (
+              <div key={star} className="relative w-5 h-5">
+                {/* Empty star background */}
+                <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 20 20" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={starPath} />
+                </svg>
+                {/* Filled half overlay */}
+                <svg
+                  className="absolute inset-0 w-5 h-5 text-orange-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  style={{
+                    clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)'
+                  }}
+                >
+                  <path d={starPath} />
+                </svg>
+              </div>
+            )
+          } else {
+            // Empty star
+            return (
+              <svg key={star} className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 20 20" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d={starPath} />
+              </svg>
+            )
+          }
+        })}
+      </div>
+    )
+  }
 
   const handleAddToCart = async () => {
     if (!selectedSize) {
@@ -214,21 +287,17 @@ function ProductDetailPage() {
 
       <Navbar />
 
-      <div className='w-12 h-12 bg-green-500'>
-        <h1>ojosfsf</h1>
-      </div>
-
       <main>
         {/* Product hero section (same style as featured product) */}
         <section className="hero fade-up">
           {/* Left: all product images in a 2-column tall grid */}
           <div className="product-hero-media">
             {productImages.map((img, index) => (
-              <div 
-                key={img || index} 
+              <div
+                key={img || index}
                 className="product-hero-item"
                 onClick={() => setSelectedImageIndex(index)}
-                style={{ 
+                style={{
                   cursor: 'pointer',
                   opacity: selectedImageIndex === index ? 1 : 0.7,
                   border: selectedImageIndex === index ? '2px solid black' : '2px solid transparent',
@@ -256,9 +325,11 @@ function ProductDetailPage() {
           {/* Right: Product information panel */}
           <div className="product-panel">
             <p className="crumbs">
-              The Bear House / {product.category} / {product.title}
+              The Wolf street / {product.category} / {product.title}
             </p>
-            <h1>{product.title}</h1>
+            <h1 className="text-lg md:text-xl font-medium text-gray-800 leading-snug" style={{ fontFamily: 'Montserrat, sans-serif', textTransform: 'uppercase' }}>
+              {product.title}
+            </h1>
             <p className="subtitle">{product.description}</p>
 
             <div className="price-row">
@@ -288,6 +359,15 @@ function ProductDetailPage() {
               <span className="label success">
                 Inclusive of all taxes
               </span>
+              {reviews.length > 0 && (
+                <span className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold">{calculateAverageRating().toFixed(1)}</span>
+                  <div className="flex">
+                    {renderStars(calculateAverageRating())}
+                  </div>
+                  <span className="text-gray-600">({reviews.length} reviews)</span>
+                </span>
+              )}
               <span className="label outline">
                 Free shipping above ₹500
               </span>
@@ -338,8 +418,8 @@ function ProductDetailPage() {
               <button type="button" className="primary w-full" onClick={handleAddToCart}>
                 Add to Cart
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleWishlistToggle}
                 style={{
                   background: 'transparent',
@@ -369,11 +449,81 @@ function ProductDetailPage() {
         </section>
 
         <Review productId={productId} />
+
+        {/* You might also like section - Slider */}
+        {(() => {
+          const relatedProducts = productsData
+            .filter(p => p.category === product.category && p._id !== product._id)
+            .slice(0, 8) // More products for slider
+          if (relatedProducts.length === 0) return null
+          return (
+            <section className="related-products fade-up" style={{ padding: '40px 20px', backgroundColor: '#f9f9f9' }}>
+              <h2 className="text-center text-2xl font-bold mb-8" style={{ fontFamily: 'Montserrat, sans-serif', textTransform: 'uppercase' }}>
+                You might also like
+              </h2>
+              <div className="relative max-w-6xl mx-auto">
+                <div className="slider-container" style={{
+                  display: 'flex',
+                  overflowX: 'auto',
+                  scrollSnapType: 'x mandatory',
+                  gap: '20px',
+                  padding: '10px 0',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}>
+                  {relatedProducts.map((relatedProduct) => (
+                    <div
+                      key={relatedProduct._id}
+                      className="slider-product-card flex-shrink-0 cursor-pointer"
+                      style={{
+                        width: '250px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                        scrollSnapAlign: 'start',
+                      }}
+                      onClick={() => navigate(`/product/${relatedProduct._id}`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-5px)'
+                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      <img
+                        src={relatedProduct.mainImage}
+                        alt={relatedProduct.title}
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                        }}
+                        loading="lazy"
+                      />
+                      <div style={{ padding: '15px' }}>
+                        <h3 className="font-semibold text-sm mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          {relatedProduct.title}
+                        </h3>
+                        <p className="font-bold text-base" style={{ color: '#333' }}>{formatPrice(relatedProduct.price)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <style jsx>{`
+                  .slider-container::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
+              </div>
+            </section>
+          )
+        })()}
       </main>
 
-      <footer className="site-footer fade-up mb-4">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
+      <footer className="site-footer fade-up">
       </footer>
 
       <Footer />

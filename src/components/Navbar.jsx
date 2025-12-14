@@ -13,7 +13,7 @@ const navItems = [
 // "category" values from the products API
 const shopCategories = [
   { label: 'All', value: 'all' },
-  { label: 'T‑Shirt', value: 't-shirt' },
+  { label: 'T-Shirt', value: 't-shirt' },
   { label: 'Shirt', value: 'shirt' },
   { label: 'Hoodie', value: 'hoodie' },
 ]
@@ -241,16 +241,19 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
   }
 
   return (
-    <header className={`site-header fade-down ${isMenuOpen ? 'menu-open' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', width: '100%' }}>
-      <div className="left-section" style={{ display: 'flex', alignItems: 'center' }}>
+    <header className={`site-header fade-down ${isMenuOpen ? 'menu-open' : ''}`} >
+      <div className="left-section">
         {isMobile && (
           <button 
             className="hamburger" 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
-            style={{ marginRight: '1rem' }}
           >
-            ☰
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
           </button>
         )}
         {!isMobile && (
@@ -323,20 +326,17 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
           </nav>
         )}
       </div>
-      <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', flex: '1', textAlign: 'center' }}>
-        <img src="/Logo.svg" alt="The Bear House Logo" style={{ maxWidth: '150px', height: 'auto' }} />
-      </div>
-      <div className="right-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div className="header-actions">
-          {/* Search icon */}
-          <div ref={searchRef} style={{ position: 'relative' }}>
+          <div ref={searchRef} className="header-icon-wrapper">
             <button
               type="button"
               aria-label="Search"
               className="header-icon-button"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
-              <span className="header-icon-symbol">🔍</span>
+              <svg className="header-icon-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
             </button>
             
             {/* Mobile search backdrop */}
@@ -465,81 +465,73 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
               </div>
             )}
           </div>
+      <div className="logo" onClick={() => navigate('/')}>
+        <img 
+          src="/logo.jpg" 
+          alt="The Bear House Logo" 
+          style={{ 
+            width: isMobile ? '120px' : '180px', 
+            height: isMobile ? '50px' : 'auto',
+            objectFit: 'contain',
+            cursor: 'pointer'
+          }} 
+        />
+      </div>
+      <div className="right-section">
+        <div className="header-actions">
+          {/* Search icon */}
 
-          {/* Wishlist icon with count like provided image */}
+          {/* Wishlist icon with count */}
           <button
             type="button"
             aria-label="Wishlist"
             className="header-icon-button"
             onClick={() => navigate('/wishlist')}
           >
-            <span className="header-icon-symbol wishlist-icon">♡</span>
-            <span className="header-count-circle -ml-2">{wishlistCount}</span>
+            <svg className="header-icon-symbol wishlist-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path>
+            </svg>
+            {wishlistCount > 0 && (
+              <span className="header-count-circle">{wishlistCount}</span>
+            )}
           </button>
 
-          {/* Cart icon with count like provided image */}
+          {/* Cart icon with count */}
           <button
             type="button"
             aria-label="Cart"
             className="header-icon-button"
             onClick={() => navigate('/cart')}
           >
-            <span className="header-icon-symbol">🛒</span>
-            <span className="header-count-circle -ml-2">{cartCount}</span>
+            <svg className="header-icon-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            {cartCount > 0 && (
+              <span className="header-count-circle">{cartCount}</span>
+            )}
           </button>
 
           {/* User/Login icon */}
           {isLoggedIn ? (
-            <div ref={userRef} style={{ position: 'relative' }}>
+            <div ref={userRef} className="header-icon-wrapper">
               <button
                 type="button"
                 aria-label="User menu"
                 className="header-icon-button"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               >
-                <span
-                  className="header-icon-symbol"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    backgroundColor: 'red',
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                  }}
-                >
+                <span className="header-user-avatar">
                   {userName.charAt(0).toUpperCase()}
                 </span>
               </button>
               {isUserDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '10px',
-                    background: 'white',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    padding: '10px',
-                  }}
-                >
+                <div className="user-dropdown">
                   <button
                     type="button"
                     onClick={handleLogout}
-                    style={{
-                      width: '100%',
-                      padding: '0 8px',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
+                    className="user-dropdown-item"
                   >
                     Logout
                   </button>
@@ -553,7 +545,10 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
               className="header-icon-button"
               onClick={() => navigate('/login')}
             >
-              <span className="header-icon-symbol">👤</span>
+              <svg className="header-icon-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
             </button>
           )}
         </div>
@@ -567,17 +562,13 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
           <button
             type="button"
             aria-label="Close menu"
-            className="header-icon-button"
+            className="mobile-menu-close"
             onClick={() => setIsMenuOpen(false)}
-            style={{ 
-              position: 'absolute', 
-              top: '0', 
-              right: '0', 
-              zIndex: 1001,
-              padding: '1rem'
-            }}
           >
-            <span className="header-icon-symbol">✕</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
           <nav
             className="mobile-nav"

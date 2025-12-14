@@ -15,6 +15,7 @@ const Review = ({ productId }) => {
   const [currentUserId, setCurrentUserId] = useState(null)
   const [deletingReviewId, setDeletingReviewId] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const [hasReviewed, setHasReviewed] = useState(false)
 
   useEffect(() => {
     if (productId) {
@@ -23,11 +24,11 @@ const Review = ({ productId }) => {
     // Get current user ID
     const token = localStorage.getItem('token')
     const storedUserId = localStorage.getItem('userId')
-    
+
     if (storedUserId) {
       setCurrentUserId(storedUserId)
     }
-    
+
     if (token) {
       getUserProfile(token)
         .then((response) => {
@@ -45,6 +46,19 @@ const Review = ({ productId }) => {
         })
     }
   }, [productId])
+
+  // Check if user has already reviewed
+  useEffect(() => {
+    if (currentUserId && reviews.length > 0) {
+      const userHasReviewed = reviews.some(review => {
+        const reviewUserId = review.user?._id || review.user?.id || review.userId || review.user
+        return reviewUserId && String(reviewUserId) === String(currentUserId)
+      })
+      setHasReviewed(userHasReviewed)
+    } else {
+      setHasReviewed(false)
+    }
+  }, [reviews, currentUserId])
 
   const fetchReviews = async () => {
     try {
@@ -103,6 +117,7 @@ const Review = ({ productId }) => {
         }
         await fetchReviews()
         setTimeout(() => setSuccess(false), 3000)
+        // After submitting, hasReviewed will be updated via useEffect
       } else {
         setError('Failed to submit review')
       }
@@ -128,6 +143,7 @@ const Review = ({ productId }) => {
         setToast({ show: true, message: 'Review deleted successfully', type: 'success' })
         // Refresh reviews
         await fetchReviews()
+        // hasReviewed will be updated via useEffect after fetchReviews
       } else {
         setToast({ show: true, message: 'Failed to delete review', type: 'error' })
       }
@@ -170,7 +186,7 @@ const Review = ({ productId }) => {
   const averageRating = calculateAverageRating()
 
   return (
-    <div className="flex flex-col py-8 mx-auto max-w-4xl px-4">
+    <div className="flex flex-col py-4 mx-auto max-w-4xl px-4">
       {toast.show && (
         <Toast
           message={toast.message}
@@ -179,15 +195,6 @@ const Review = ({ productId }) => {
         />
       )}
       <h2 className="text-gray-900 text-lg font-bold uppercase mb-6 text-center">CUSTOMER REVIEWS</h2>
-      
-      {/* Average Rating */}
-      {reviews.length > 0 && (
-        <div className="flex flex-col items-center mb-6">
-          <div className="text-4xl font-bold mb-2">{averageRating}</div>
-          {renderStars(Math.round(averageRating))}
-          <p className="text-gray-600 text-sm mt-2">Based on {reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
-        </div>
-      )}
 
       {/* Success Message */}
       {success && (
@@ -204,7 +211,7 @@ const Review = ({ productId }) => {
       )}
 
       {/* Write Review Button */}
-      {!showReviewForm && (
+      {!showReviewForm && !hasReviewed && (
         <div className="flex flex-col items-center mb-6">
           {reviews.length === 0 && (
             <p className="text-gray-900 text-sm mb-4 text-center">Be the first to write a review</p>
