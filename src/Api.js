@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'https://prectise-1.onrender.com'
+const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'https://prectise-1.onrender.com/v1'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
@@ -250,4 +250,5 @@ export const verifyPayment = async (razorpay_order_id, razorpay_payment_id, razo
     razorpay_signature,
   })
 }
+
 
