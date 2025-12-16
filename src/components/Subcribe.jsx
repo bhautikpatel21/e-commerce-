@@ -1,19 +1,39 @@
 import React, { useState } from "react";
 import { FaInstagram, FaFacebook, FaYoutube, FaLinkedin } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
+import { sendMail } from "../Api";
+import Toast from "./Toast";
 
 const Subscribe = () => {
   const [subscribed, setSubscribed] = useState(false);
   const [email, setEmail] = useState("");
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-  const handleSubscribe = () => {
-    if (email.trim() !== "") {
+  const handleSubscribe = async () => {
+    if (email.trim() === "") {
+      setToast({ show: true, message: 'Please enter your email address', type: 'error' });
+      return;
+    }
+    
+    try {
+      await sendMail(email);
       setSubscribed(true);
+      setToast({ show: true, message: 'Successfully subscribed! 🎉', type: 'success' });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      setToast({ show: true, message: 'Enter valid email address.', type: 'error' });
     }
   };
 
   return (
     <div className="relative w-full mt-6 px-12">
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ show: false, message: '', type: 'success' })}
+        />
+      )}
       <div className="absolute inset-0" style={{ backgroundImage: 'url(/images/subcribe.webp)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: 0.5 }}></div>
       <div className="relative z-10 flex flex-col items-center w-full py-12 text-center gap-6">
         <h2 className="text-2xl font-bold uppercase tracking-wide">
@@ -33,7 +53,7 @@ const Subscribe = () => {
               onClick={handleSubscribe}
               className="bg-black text-white font-semibold w-full py-2"
             >
-              SIGN UP NOW
+              SUBSCRIB NOW
             </button>
           </div>
         ) : (
@@ -42,29 +62,6 @@ const Subscribe = () => {
           </p>
         )}
 
-        {/* Social Icons */}
-        <div className="flex gap-5 text-2xl mt-4">
-          <FaInstagram />
-          <FaFacebook />
-          <FaYoutube />
-          <RxCross2 />
-          <FaLinkedin />
-        </div>
-
-        {/* Download App */}
-        <p className="text-lg font-medium mt-6">DOWNLOAD OUR APP</p>
-        <div className="flex gap-4">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-            alt="Google Play"
-            className="w-36 cursor-pointer"
-          />
-          <img
-            src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-            alt="App Store"
-            className="w-36 cursor-pointer"
-          />
-        </div>
       </div>
     </div>
   );

@@ -21,6 +21,27 @@ export const calculateDiscountedPrice = (originalPrice) => {
 }
 
 /**
+ * Check if total qualifies for 10% discount (up to ₹2499)
+ * @param {number} total - Cart total
+ * @returns {boolean} True if qualifies
+ */
+export const qualifiesForAmountDiscount = (total) => {
+  return total <= 2499
+}
+
+/**
+ * Calculate discounted total for amount-based discount (10% off if <= ₹2499)
+ * @param {number} total - Original total
+ * @returns {number} Discounted total
+ */
+export const calculateAmountDiscountedTotal = (total) => {
+  if (qualifiesForAmountDiscount(total)) {
+    return total * 0.9 // 10% discount
+  }
+  return total
+}
+
+/**
  * Format price in Indian Rupees
  * @param {number} price - Price to format
  * @returns {string} Formatted price string

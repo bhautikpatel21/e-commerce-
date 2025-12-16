@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
-import ScrollableProductImage from '../components/ScrollableProductImage'
-import { getWishlist, removeFromWishlist } from '../Api'
+import { getWishlist, removeFromWishlist, addToCart } from '../Api'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
 import '../App.css'
 
@@ -14,9 +13,9 @@ const Wishlist = () => {
   const [error, setError] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
+  const [hoveredItem, setHoveredItem] = useState(null)
   const navigate = useNavigate()
 
-  // Check if today is Friday on component mount
   useEffect(() => {
     setIsFridayDiscount(isFriday())
   }, [])
@@ -60,7 +59,6 @@ const Wishlist = () => {
       if (response.isSuccess) {
         setWishlistItems(prev => prev.filter(item => item._id !== productId))
         setToast({ show: true, message: 'Item removed from wishlist', type: 'success' })
-        // Dispatch event to update navbar count
         window.dispatchEvent(new Event('wishlistChanged'))
       } else {
         setToast({ show: true, message: 'Failed to remove item from wishlist', type: 'error' })
@@ -70,26 +68,64 @@ const Wishlist = () => {
     }
   }
 
-  const handleProductClick = (product) => {
-    navigate(`/product/${encodeURIComponent(product.title)}`)
+  const handleAddToCart = async (e, product) => {
+    e.stopPropagation()
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setToast({ show: true, message: 'Please login to add items to cart', type: 'error' })
+      return
+    }
+
+    try {
+      const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : 'M'
+      const response = await addToCart(product._id, 1, defaultSize, token)
+      if (response.isSuccess) {
+        setToast({ show: true, message: `${product.title} added to cart`, type: 'success' })
+        window.dispatchEvent(new Event('cartChanged'))
+      } else {
+        setToast({ show: true, message: 'Failed to add item to cart', type: 'error' })
+      }
+    } catch (err) {
+      setToast({ show: true, message: 'Error adding item to cart', type: 'error' })
+    }
   }
 
+  const handleProductClick = (product) => {
+    navigate(`/product/${product._id}`)
+  }
+
+  // Loading State
   if (loading) {
     return (
       <div className="page-shell">
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <p>Loading wishlist...</p>
+        <Navbar />
+        <div className="min-h-[60vh] flex items-center justify-center flex-col gap-5">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm tracking-wider">Loading your wishlist...</p>
         </div>
+        <Footer />
       </div>
     )
   }
 
+  // Error State
   if (error) {
     return (
       <div className="page-shell">
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <p style={{ color: 'red' }}>Error: {error}</p>
+        <Navbar />
+        <div className="min-h-[60vh] flex items-center justify-center flex-col gap-5 p-10">
+          <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center text-3xl">
+            ⚠️
+          </div>
+          <p className="text-red-500 text-base text-center">{error}</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-8 py-3.5 bg-gray-900 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all duration-300"
+          >
+            Login to Continue
+          </button>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -103,6 +139,7 @@ const Wishlist = () => {
           onClose={() => setToast({ show: false, message: '', type: 'success' })}
         />
       )}
+      
       <marquee
         className="announcement-bar fade-down"
         direction="right"
@@ -114,135 +151,173 @@ const Wishlist = () => {
 
       <Navbar />
 
-      <main>
-        <section className="wishlist-section fade-up" style={{ padding: '50px 20px', maxWidth: '1200px', margin: '0 auto' }}>
-          <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2.5rem' }}>My Wishlist</h1>
+      <main className="bg-gradient-to-b from-gray-50 to-white min-h-[70vh]">
+        {/* Hero Header */}
+        <section className="py-20 px-5 text-center text-white relative overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/images/download.jpg')" }}
+          ></div>
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-black/50"></div>
+          
+          <div className="relative z-10">
+            <h1 className="font-['Montserrat'] text-3xl font-bold mb-2 tracking-tight drop-shadow-lg">
+              My Wishlist
+            </h1>
+            <p className="text-sm opacity-80 tracking-wide">
+              {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved
+            </p>
+          </div>
+        </section>
 
+        {/* Content Section */}
+        <section className="py-12 px-5 max-w-7xl mx-auto">
           {wishlistItems.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-              <p style={{ fontSize: '1.2rem', color: '#666' }}>Your wishlist is empty</p>
+            /* Empty State */
+            <div className="text-center py-24 px-5 bg-white rounded-2xl shadow-sm">
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-50 to-white rounded-full flex items-center justify-center shadow-inner">
+                <span className="text-5xl text-gray-300">♡</span>
+              </div>
+              <h2 className="font-['Montserrat'] text-xl font-semibold text-gray-900 mb-3">
+                Your wishlist is empty
+              </h2>
+              <p className="text-sm text-gray-500 mb-8 max-w-sm mx-auto">
+                Save items you love by clicking the heart icon on any product
+              </p>
               <button
                 onClick={() => navigate('/')}
-                style={{
-                  marginTop: '20px',
-                  padding: '12px 24px',
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
-                }}
+                className="px-10 py-4 bg-gray-900 text-white rounded-full text-sm font-semibold tracking-wide hover:bg-gray-800 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
               >
-                Continue Shopping
+                Explore Products
               </button>
             </div>
           ) : (
-            <div className="wishlist-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '30px',
-              marginTop: '30px'
-            }}>
+            /* Wishlist Grid */
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {wishlistItems.map((product) => (
                 <div
                   key={product._id}
-                  className="wishlist-item"
-                  style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-5px)'
-                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
+                  onClick={() => handleProductClick(product)}
+                  onMouseEnter={() => setHoveredItem(product._id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  className="group bg-white rounded-xl overflow-hidden cursor-pointer border border-gray-100 hover:border-transparent hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 relative"
                 >
-                  {/* Remove button */}
+                  {/* Remove Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       handleRemoveFromWishlist(product._id)
                     }}
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      background: 'rgba(255,255,255,0.9)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '30px',
-                      height: '30px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '16px',
-                      zIndex: 2
-                    }}
+                    className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center z-10 shadow-md text-gray-400 hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-200"
                     title="Remove from wishlist"
                   >
-                    ✕
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
                   </button>
 
-                  <div onClick={() => handleProductClick(product)}>
-                    <div style={{ position: 'relative' }}>
-                      <ScrollableProductImage
-                        product={product}
-                        productId={`wishlist-${product._id}`}
-                        showDiscountBadge={isFridayDiscount}
-                      />
+                  {/* Discount Badge */}
+                  {isFridayDiscount && (
+                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide z-10">
+                      10% OFF
                     </div>
-                    <div style={{ padding: '20px' }}>
-                      <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                        {product.title}
-                      </h3>
-                      <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '0.9rem' }}>
-                        {product.description}
-                      </p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  )}
+
+                  {/* Product Image */}
+                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+                    <img
+                      src={product.mainImage}
+                      alt={product.title}
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        hoveredItem === product._id ? 'scale-110' : 'scale-100'
+                      }`}
+                      loading="lazy"
+                    />
+                    
+                    {/* Hover Overlay */}
+                    <div className={`absolute bottom-0 left-0 right-0 p-4 pt-16 bg-gradient-to-t from-black/70 to-transparent flex justify-center transition-opacity duration-300 ${
+                      hoveredItem === product._id ? 'opacity-100' : 'opacity-0'
+                    }`}>
+                      <button
+                        onClick={(e) => handleAddToCart(e, product)}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-900 rounded-md text-xs font-semibold uppercase tracking-wide hover:bg-gray-900 hover:text-white transition-all duration-200"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                          <line x1="3" y1="6" x2="21" y2="6"/>
+                          <path d="M16 10a4 4 0 01-8 0"/>
+                        </svg>
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <span className="block text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">
+                      {product.category}
+                    </span>
+                    <h3 className="font-['Montserrat'] text-sm font-semibold text-gray-900 mb-3 leading-tight line-clamp-2 min-h-[40px]">
+                      {product.title}
+                    </h3>
+                    
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
                         {product.price ? (
                           isFridayDiscount ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: '#999', textDecoration: 'line-through' }}>
-                                {formatPrice(product.price)}
-                              </span>
-                              <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>
+                            <>
+                              <span className="text-base font-bold text-gray-900">
                                 {formatPrice(calculateDiscountedPrice(product.price))}
                               </span>
-                            </div>
+                              <span className="text-xs text-gray-400 line-through">
+                                {formatPrice(product.price)}
+                              </span>
+                            </>
                           ) : (
-                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                            <span className="text-base font-bold text-gray-900">
                               {formatPrice(product.price)}
                             </span>
                           )
                         ) : (
-                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Price not available</span>
+                          <span className="text-sm text-gray-400">Price N/A</span>
                         )}
-                        <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                          {product.category}
-                        </span>
                       </div>
+                      
+                      {/* Size Pills */}
+                      {product.sizes && product.sizes.length > 0 && (
+                        <div className="hidden sm:flex gap-1">
+                          {product.sizes.slice(0, 3).map((size) => (
+                            <span 
+                              key={size} 
+                              className="text-[9px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-500 font-semibold"
+                            >
+                              {size}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
+          
+          {/* Continue Shopping Button */}
+          {wishlistItems.length > 0 && (
+            <div className="text-center mt-12">
+              <button
+                onClick={() => navigate('/')}
+                className="px-10 py-3.5 bg-transparent border-2 border-gray-900 text-gray-900 text-xs font-semibold uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all duration-300"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          )}
         </section>
       </main>
-
-      <footer className="site-footer fade-up">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
-      </footer>
 
       <Footer />
     </div>

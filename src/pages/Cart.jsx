@@ -3,7 +3,8 @@ import { getCart, updateCart, removeFromCart } from '../Api'
 import Toast from '../components/Toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
+import CheckoutModal from '../components/CheckoutModal'
+import { isFriday, calculateDiscountedPrice, formatPrice, qualifiesForAmountDiscount, calculateAmountDiscountedTotal } from '../utils/discount'
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([])
@@ -11,6 +12,7 @@ const Cart = () => {
   const [error, setError] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [isFridayDiscount, setIsFridayDiscount] = useState(isFriday())
+  const [showCheckout, setShowCheckout] = useState(false)
 
   const fetchCart = async () => {
     const token = localStorage.getItem('token')
@@ -41,6 +43,14 @@ const Cart = () => {
   }, [])
 
   const calculateTotal = () => {
+    const subtotal = cartItems.reduce((total, item) => {
+      const price = isFridayDiscount ? calculateDiscountedPrice(item.product.price) : item.product.price
+      return total + (price * item.quantity)
+    }, 0)
+    return calculateAmountDiscountedTotal(subtotal)
+  }
+
+  const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
       const price = isFridayDiscount ? calculateDiscountedPrice(item.product.price) : item.product.price
       return total + (price * item.quantity)
@@ -183,232 +193,339 @@ const Cart = () => {
         <p>TBH is better on the app · Flat ₹300 off on your first order</p>
       </marquee>
       <Navbar />
-      <main className="cart-main" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <main className="cart-main" style={{ padding: '20px 20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Cart Header */}
+        <div style={{ marginBottom: '24px' }}>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '700', 
+            color: '#111',
+            margin: '0 0 4px 0'
+          }}>
+            Shopping Cart
+          </h1>
+          <p style={{ 
+            fontSize: '14px', 
+            color: '#666',
+            margin: 0
+          }}>
+            {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart
+          </p>
+        </div>
 
         {cartItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '50px' }}>
-            <p>Your cart is empty</p>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            background: '#f9f9f9',
+            borderRadius: '12px'
+          }}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <h3 style={{ margin: '0 0 8px 0', color: '#333', fontSize: '18px' }}>Your cart is empty</h3>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Looks like you haven't added any items yet</p>
           </div>
         ) : (
-          <>
-            <div className="cart-items-container" style={{ display: 'grid', gap: '20px' }}>
-              {cartItems.map((item) => (
+          <div className="cart-layout" style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '32px',
+            alignItems: 'start'
+          }}>
+            {/* Cart Items Section */}
+            <div className="cart-items-container" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0',
+              background: 'white',
+              borderRadius: '12px',
+              padding: '16px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+            }}>
+              {cartItems.map((item, index) => (
                 <div 
                   key={item._id} 
                   className="cart-item-card"
                   style={{ 
-                    display: 'flex', 
-                    padding: '16px', 
-                    border: '1px solid #e0e0e0', 
-                    borderRadius: '12px', 
+                    padding: '20px 0', 
+                    borderBottom: index < cartItems.length - 1 ? '1px solid #eee' : 'none',
                     background: 'white',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                   }}
                 >
-                  <div className="cart-item-image" style={{ position: 'relative', marginRight: '16px' }}>
+                  {/* Row 1: Image + Title + Size + Price */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: '16px',
+                    marginBottom: '12px'
+                  }}>
+                    {/* Thumbnail - larger on desktop */}
                     <img
                       src={item.product.mainImage}
                       alt={item.product.title}
                       className="cart-item-img"
-                      style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px' }}
+                      style={{ 
+                        width: '70px', 
+                        height: '70px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px',
+                        flexShrink: 0,
+                        border: '1px solid #f0f0f0'
+                      }}
                     />
-                  </div>
-                  <div className="cart-item-details" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div className="cart-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
-                        <div className="cart-item-title-section">
-                          <h3 className="cart-item-title" style={{ margin: '0', fontSize: '16px', fontWeight: '500', flex: 1 }}>{item.product.title}</h3>
-                          <p className="cart-item-price-mobile" style={{
-                            margin: '4px 0 0 0',
-                            fontWeight: 'bold',
-                            fontSize: '16px',
-                            color: '#333',
-                            display: 'none'
-                          }}>
-                            {isFridayDiscount ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-                                <span style={{
-                                  fontSize: '12px',
-                                  color: '#999',
-                                  textDecoration: 'line-through'
-                                }}>
-                                  {formatPrice(item.product.price * item.quantity)}
-                                </span>
-                                <span style={{
-                                  fontWeight: 'bold',
-                                  fontSize: '16px',
-                                  color: '#333'
-                                }}>
-                                  {formatPrice(calculateDiscountedPrice(item.product.price) * item.quantity)}
-                                </span>
-                              </div>
-                            ) : (
-                              formatPrice(item.product.price * item.quantity)
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="cart-size-section" style={{ marginBottom: '8px' }}>
-                        <select 
-                          value={item.size} 
-                          onChange={(e) => handleSizeChange(item._id, e.target.value)}
-                          className="cart-size-select"
-                          style={{
-                            padding: '4px 8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            background: 'white',
-                            fontSize: '14px',
-                            appearance: 'none',
-                            backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")',
-                            backgroundPosition: 'right 4px center',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundSize: '16px',
-                            paddingRight: '24px'
-                          }}
-                        >
-                          {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => (
-                            <option key={size} value={size}>{size}</option>
-                          ))}
-                        </select>
-                      </div>
+
+                    {/* Title + Size */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 className="cart-item-title" style={{ 
+                        margin: '0 0 6px 0', 
+                        fontSize: '15px', 
+                        fontWeight: '600', 
+                        color: '#333',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                      }}>
+                        {item.product.title}
+                      </h3>
+                      <span 
+                        onClick={() => {
+                          // Use product's available sizes, not hardcoded list
+                          const availableSizes = item.product.sizes || [item.size];
+                          if (availableSizes.length > 1) {
+                            const currentIndex = availableSizes.indexOf(item.size);
+                            const nextIndex = (currentIndex + 1) % availableSizes.length;
+                            handleSizeChange(item._id, availableSizes[nextIndex]);
+                          }
+                        }}
+                        style={{
+                          display: 'inline-block',
+                          padding: '3px 12px',
+                          background: '#fee2e2',
+                          color: '#dc2626',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: item.product.sizes && item.product.sizes.length > 1 ? 'pointer' : 'default'
+                        }}
+                        title={item.product.sizes && item.product.sizes.length > 1 ? 'Click to change size' : ''}
+                      >
+                        {item.size}
+                      </span>
                     </div>
-                    <div className="cart-item-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                      <div className="cart-quantity-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '4px' }}>
-                        <button
-                          onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
-                          className="qty-minus"
-                          style={{ 
-                            background: 'none', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            fontSize: '18px', 
-                            color: '#666',
-                            padding: '4px 8px',
-                            minWidth: '24px'
-                          }}
-                        >
-                          −
-                        </button>
-                        <span className="qty-value" style={{ minWidth: '20px', textAlign: 'center', fontWeight: '500' }}>{item.quantity}</span>
-                        <button
-                          onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
-                          className="qty-plus"
-                          style={{ 
-                            background: 'none', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            fontSize: '18px', 
-                            color: '#666',
-                            padding: '4px 8px',
-                            minWidth: '24px'
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
+
+                    {/* Price */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      {isFridayDiscount ? (
+                        <>
+                          <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>
+                            {formatPrice(item.product.price * item.quantity)}
+                          </div>
+                          <div style={{ fontWeight: '600', fontSize: '16px', color: '#333' }}>
+                            {formatPrice(calculateDiscountedPrice(item.product.price) * item.quantity)}
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ fontWeight: '600', fontSize: '16px', color: '#333' }}>
+                          {formatPrice(item.product.price * item.quantity)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Row 2: Quantity Controls + Delete */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingLeft: '86px'
+                  }}>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      background: '#f3f4f6', 
+                      borderRadius: '20px'
+                    }}>
                       <button
-                        onClick={() => handleRemove(item._id)}
-                        className="cart-delete-btn"
+                        onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
                         style={{ 
-                          background: 'none', 
+                          background: '#e5e7eb', 
                           border: 'none', 
                           cursor: 'pointer', 
-                          fontSize: '18px', 
-                          color: '#dc3545',
-                          padding: '4px 8px'
+                          fontSize: '14px', 
+                          color: '#374151',
+                          padding: '8px 16px',
+                          fontWeight: '600',
+                          borderRadius: '20px 0 0 20px',
+                          transition: 'background 0.2s'
                         }}
-                        title="Remove item"
                       >
-                        🗑️
+                        −
+                      </button>
+                      <span style={{ 
+                        minWidth: '36px', 
+                        textAlign: 'center', 
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        color: '#374151'
+                      }}>
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
+                        style={{ 
+                          background: '#e5e7eb', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          fontSize: '14px', 
+                          color: '#374151',
+                          padding: '8px 16px',
+                          fontWeight: '600',
+                          borderRadius: '0 20px 20px 0',
+                          transition: 'background 0.2s'
+                        }}
+                      >
+                        +
                       </button>
                     </div>
-                  </div>
-                  <div className="cart-item-price-desktop" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', minWidth: '100px' }}>
-                    {isFridayDiscount ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                        <span style={{
-                          fontSize: '14px',
-                          color: '#999',
-                          textDecoration: 'line-through'
-                        }}>
-                          {formatPrice(item.product.price * item.quantity)}
-                        </span>
-                        <span style={{
-                          fontWeight: 'bold',
-                          fontSize: '18px',
-                          color: '#333'
-                        }}>
-                          {formatPrice(calculateDiscountedPrice(item.product.price) * item.quantity)}
-                        </span>
-                      </div>
-                    ) : (
-                      <p style={{
-                        margin: '0',
-                        fontWeight: 'bold',
-                        fontSize: '18px',
-                        color: '#333'
-                      }}>
-                        {formatPrice(item.product.price * item.quantity)}
-                      </p>
-                    )}
+
+                    <button
+                      onClick={() => handleRemove(item._id)}
+                      style={{ 
+                        background: '#f3f4f6', 
+                        border: 'none', 
+                        cursor: 'pointer', 
+                        padding: '8px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'background 0.2s'
+                      }}
+                      title="Remove item"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="cart-total-section" style={{ marginTop: '30px', padding: '20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-              <div className="cart-total-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                    Total: {isFridayDiscount && <span style={{ fontSize: '14px', color: '#28a745', fontWeight: 'bold' }}>10% OFF</span>}
-                  </h3>
-                  {isFridayDiscount ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                      <span style={{
-                        fontSize: '16px',
-                        color: '#999',
-                        textDecoration: 'line-through'
-                      }}>
-                        ₹{cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0).toLocaleString('en-IN', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
-                      </span>
-                      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '20px', color: '#333' }}>
-                        {formatPrice(calculateTotal())}
-                      </p>
-                    </div>
-                  ) : (
-                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '20px', color: '#333' }}>
-                      {formatPrice(calculateTotal())}
-                    </p>
-                  )}
+            {/* Cart Summary Section */}
+            <div className="cart-total-section" style={{ 
+              padding: '24px', 
+              background: '#f9f9f9', 
+              borderRadius: '12px',
+              height: 'fit-content',
+              position: 'sticky',
+              top: '100px'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700', 
+                color: '#111',
+                margin: '0 0 20px 0'
+              }}>
+                Order Summary
+              </h2>
+
+              {/* Summary Items */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ color: '#666', fontSize: '14px' }}>Subtotal ({cartItems.length} items)</span>
+                  <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                    {formatPrice(cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0))}
+                  </span>
                 </div>
-                <button
-                  className="cart-checkout-btn"
-                  style={{
-                    padding: '12px 24px',
-                    background: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '600'
-                  }}
-                  onClick={() => {
-                    setToast({ show: true, message: 'Checkout functionality not implemented yet', type: 'error' })
-                  }}
-                >
-                  Proceed to Checkout
-                </button>
+                {isFridayDiscount && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ color: '#22c55e', fontSize: '14px' }}>Friday Discount (10%)</span>
+                    <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '500' }}>
+                      -{formatPrice(cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0) * 0.1)}
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ color: '#666', fontSize: '14px' }}>Shipping</span>
+                  <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '600' }}>FREE</span>
+                </div>
               </div>
+
+              {/* Total */}
+              <div style={{ 
+                borderTop: '2px solid #e5e5e5', 
+                paddingTop: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>Total</span>
+                <span style={{ fontSize: '24px', fontWeight: '700', color: '#111' }}>
+                  {formatPrice(calculateTotal())}
+                </span>
+              </div>
+
+              {/* Checkout Button */}
+              <button
+                className="cart-checkout-btn"
+                style={{
+                  width: '100%',
+                  padding: '16px 24px',
+                  background: '#111',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  transition: 'all 0.2s'
+                }}
+                onClick={() => {
+                  const token = localStorage.getItem('token')
+                  if (!token) {
+                    setToast({ show: true, message: 'Please login to checkout', type: 'error' })
+                    return
+                  }
+                  setShowCheckout(true)
+                }}
+              >
+                Proceed to Checkout
+              </button>
+
+              {/* Security Note */}
+              <p style={{ 
+                fontSize: '12px', 
+                color: '#999', 
+                textAlign: 'center',
+                marginTop: '16px',
+                marginBottom: 0
+              }}>
+                🔒 Secure checkout powered by SSL
+              </p>
             </div>
-          </>
+          </div>
         )}
       </main>
       <Footer />
+      
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        cartItems={cartItems}
+        totalAmount={calculateTotal()}
+        onOrderSuccess={(orderId) => {
+          setCartItems([])
+          setToast({ show: true, message: 'Order placed successfully!', type: 'success' })
+        }}
+      />
     </div>
   )
 }

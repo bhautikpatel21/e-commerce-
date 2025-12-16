@@ -450,74 +450,228 @@ function ProductDetailPage() {
 
         <Review productId={productId} />
 
-        {/* You might also like section - Slider */}
+        {/* You might also like section - Horizontal Slider */}
         {(() => {
           const relatedProducts = productsData
             .filter(p => p.category === product.category && p._id !== product._id)
-            .slice(0, 8) // More products for slider
+            .slice(0, 8) // Show up to 8 products in slider
           if (relatedProducts.length === 0) return null
+          
           return (
-            <section className="related-products fade-up" style={{ padding: '40px 20px', backgroundColor: '#f9f9f9' }}>
-              <h2 className="text-center text-2xl font-bold mb-8" style={{ fontFamily: 'Montserrat, sans-serif', textTransform: 'uppercase' }}>
-                You might also like
-              </h2>
-              <div className="relative max-w-6xl mx-auto">
-                <div className="slider-container" style={{
-                  display: 'flex',
-                  overflowX: 'auto',
-                  scrollSnapType: 'x mandatory',
-                  gap: '20px',
-                  padding: '10px 0',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}>
+            <section className="related-products fade-up" style={{ 
+              padding: '60px 0', 
+              background: 'linear-gradient(180deg, #fafafa 0%, #fff 100%)',
+              borderTop: '1px solid #eee',
+              overflow: 'hidden'
+            }}>
+              <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    letterSpacing: '3px', 
+                    color: '#888',
+                    textTransform: 'uppercase',
+                    fontWeight: '500'
+                  }}>
+                    Curated for you
+                  </span>
+                  <h2 style={{ 
+                    fontFamily: 'Montserrat, sans-serif', 
+                    fontSize: '28px',
+                    fontWeight: '600',
+                    marginTop: '8px',
+                    color: '#1a1a1a',
+                    letterSpacing: '-0.5px'
+                  }}>
+                    You Might Also Like
+                  </h2>
+                </div>
+                
+                {/* Slider Container */}
+                <div 
+                  id="related-products-slider"
+                  style={{
+                    display: 'flex',
+                    gap: '20px',
+                    overflowX: 'auto',
+                    scrollBehavior: 'smooth',
+                    paddingBottom: '20px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                >
                   {relatedProducts.map((relatedProduct) => (
                     <div
                       key={relatedProduct._id}
-                      className="slider-product-card flex-shrink-0 cursor-pointer"
-                      style={{
-                        width: '250px',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                        scrollSnapAlign: 'start',
-                      }}
+                      className="related-product-card"
                       onClick={() => navigate(`/product/${relatedProduct._id}`)}
+                      style={{
+                        cursor: 'pointer',
+                        background: '#fff',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        flex: '0 0 280px',
+                        minWidth: '280px',
+                      }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-5px)'
-                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)'
+                        e.currentTarget.style.transform = 'translateY(-8px)'
+                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12)'
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = 'none'
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
                       }}
                     >
-                      <img
-                        src={relatedProduct.mainImage}
-                        alt={relatedProduct.title}
-                        style={{
-                          width: '100%',
-                          height: '200px',
-                          objectFit: 'cover',
+                      {/* Image Container */}
+                      <div style={{ 
+                        position: 'relative',
+                        paddingTop: '125%',
+                        overflow: 'hidden',
+                        background: '#f5f5f5'
+                      }}>
+                        <img
+                          src={relatedProduct.mainImage}
+                          alt={relatedProduct.title}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.5s ease',
+                          }}
+                          loading="lazy"
+                          onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                        />
+                        {/* Quick View Overlay */}
+                        <div style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          padding: '12px',
+                          background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease',
                         }}
-                        loading="lazy"
-                      />
-                      <div style={{ padding: '15px' }}>
-                        <h3 className="font-semibold text-sm mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                        className="quick-view-overlay"
+                        >
+                          <span style={{ 
+                            color: '#fff', 
+                            fontSize: '12px', 
+                            fontWeight: '500',
+                            letterSpacing: '1px'
+                          }}>
+                            QUICK VIEW
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Product Info */}
+                      <div style={{ padding: '16px 14px 20px' }}>
+                        <p style={{ 
+                          fontSize: '11px', 
+                          color: '#888', 
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          marginBottom: '6px'
+                        }}>
+                          {relatedProduct.category}
+                        </p>
+                        <h3 style={{ 
+                          fontFamily: 'Montserrat, sans-serif',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#1a1a1a',
+                          marginBottom: '10px',
+                          lineHeight: '1.4',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
                           {relatedProduct.title}
                         </h3>
-                        <p className="font-bold text-base" style={{ color: '#333' }}>{formatPrice(relatedProduct.price)}</p>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between' 
+                        }}>
+                          <span style={{ 
+                            fontSize: '16px', 
+                            fontWeight: '700',
+                            color: '#1a1a1a'
+                          }}>
+                            {formatPrice(relatedProduct.price)}
+                          </span>
+                          <span style={{
+                            fontSize: '11px',
+                            color: '#4CAF50',
+                            fontWeight: '500',
+                            background: '#e8f5e9',
+                            padding: '4px 8px',
+                            borderRadius: '4px'
+                          }}>
+                            In Stock
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <style jsx>{`
-                  .slider-container::-webkit-scrollbar {
-                    display: none;
-                  }
-                `}</style>
+                
+                {/* View All Button */}
+                <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                  <button
+                    onClick={() => navigate('/products')}
+                    style={{
+                      background: 'transparent',
+                      border: '2px solid #1a1a1a',
+                      padding: '14px 40px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      letterSpacing: '1.5px',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      borderRadius: '0',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#1a1a1a'
+                      e.target.style.color = '#fff'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'transparent'
+                      e.target.style.color = '#1a1a1a'
+                    }}
+                  >
+                    View All Products
+                  </button>
+                </div>
               </div>
+              
+              <style>{`
+                .related-product-card:hover .quick-view-overlay {
+                  opacity: 1 !important;
+                }
+                #related-products-slider::-webkit-scrollbar {
+                  display: none;
+                }
+                #related-products-slider {
+                  -ms-overflow-style: none;
+                  scrollbar-width: none;
+                }
+                @media (max-width: 600px) {
+                  #related-products-slider > div {
+                    flex: 0 0 240px !important;
+                    min-width: 240px !important;
+                  }
+                }
+              `}</style>
             </section>
           )
         })()}

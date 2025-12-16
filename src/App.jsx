@@ -13,6 +13,7 @@ import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
 import NewArrival from './pages/NewArrival'
 import TrendingNow from './pages/TrendingNow'
+import Orders from './pages/Orders'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path='/wishlist' element={<Wishlist/>}/>
         <Route path='/newarrival' element={<NewArrival/>}/>
         <Route path='/trendingnow' element={<TrendingNow/>}/>
+        <Route path='/orders' element={<Orders/>}/>
       </Routes>
     </Router>
   )

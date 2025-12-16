@@ -25,7 +25,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024)
   const [userName, setUserName] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
@@ -37,7 +37,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768)
+      setIsMobile(window.innerWidth <= 1024)
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -256,76 +256,8 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
             </svg>
           </button>
         )}
-        {!isMobile && (
-          <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
-            {navItems.map((item) => {
-              if (item === 'Shop All') {
-                return (
-                  <div
-                    key={item}
-                    className="nav-item shop-all-wrapper"
-                    onMouseEnter={() => setIsShopDropdownOpen(true)}
-                    onMouseLeave={() => setIsShopDropdownOpen(false)}
-                  >
-                    <button
-                      type="button"
-                      className="link-like-button"
-                      onClick={() => handleCategoryClick('all')}
-                    >
-                      {item}
-                    </button>
-
-                    {isShopDropdownOpen && (
-                      <div className="shop-dropdown">
-                        {shopCategories.map((cat) => (
-                          <button
-                            key={cat.value}
-                            type="button"
-                            className="shop-dropdown-item"
-                            onClick={() => handleCategoryClick(cat.value)}
-                          >
-                            {cat.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              }
-
-              if (item === 'Home Page') {
-                return (
-                  <Link to="/" key={item} className="nav-item">
-                    {item}
-                  </Link>
-                )
-              }
-
-              if (item === 'New Arrivals') {
-                return (
-                  <Link to="/newarrival" key={item} className="nav-item">
-                    {item}
-                  </Link>
-                )
-              }
-
-              if (item === 'Trending Now') {
-                return (
-                  <Link to="/trendingnow" key={item} className="nav-item">
-                    {item}
-                  </Link>
-                )
-              }
-
-              return (
-                <a href="#" key={item} className="nav-item">
-                  {item}
-                </a>
-              )
-            })}
-          </nav>
-        )}
-      </div>
+        {/* Search icon on left side for mobile */}
+        {isMobile && (
           <div ref={searchRef} className="header-icon-wrapper">
             <button
               type="button"
@@ -340,7 +272,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
             </button>
             
             {/* Mobile search backdrop */}
-            {isMobile && isSearchOpen && (
+            {isSearchOpen && (
               <div
                 style={{
                   position: 'fixed',
@@ -355,7 +287,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
             {/* Search dropdown */}
             {isSearchOpen && (
               <div
-                style={isMobile ? {
+                style={{
                   position: 'fixed',
                   top: '4rem',
                   left: 0,
@@ -365,18 +297,6 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                   borderRadius: '0 0 8px 8px',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                   zIndex: 999,
-                  padding: '20px',
-                } : {
-                  position: 'absolute',
-                  top: '100%',
-                  right: '0',
-                  marginTop: '10px',
-                  width: '400px',
-                  maxWidth: '90vw',
-                  background: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                  zIndex: 1000,
                   padding: '20px',
                 }}
                 onClick={(e) => e.stopPropagation()}
@@ -401,7 +321,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                 {searchQuery.trim() && (
                   <div
                     style={{
-                      maxHeight: isMobile ? 'calc(100vh - 8rem)' : '400px',
+                      maxHeight: 'calc(100vh - 8rem)',
                       overflowY: 'auto',
                       marginTop: '15px',
                     }}
@@ -465,7 +385,83 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
               </div>
             )}
           </div>
-      <div className="logo" onClick={() => navigate('/')}>
+        )}
+        {!isMobile && (
+          <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
+            {navItems.map((item) => {
+              if (item === 'Shop All') {
+                return (
+                  <div
+                    key={item}
+                    className="nav-item shop-all-wrapper"
+                    onMouseEnter={() => setIsShopDropdownOpen(true)}
+                    onMouseLeave={() => setIsShopDropdownOpen(false)}
+                  >
+                    <button
+                      type="button"
+                      className="link-like-button"
+                      onClick={() => handleCategoryClick('all')}
+                    >
+                      {item}
+                    </button>
+
+                    {isShopDropdownOpen && (
+                      <div className="shop-dropdown">
+                        {shopCategories.map((cat) => (
+                          <button
+                            key={cat.value}
+                            type="button"
+                            className="shop-dropdown-item"
+                            onClick={() => handleCategoryClick(cat.value)}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
+              if (item === 'Home Page') {
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    className="nav-item link-like-button"
+                    onClick={() => navigate('/', { state: { resetCategory: true } })}
+                  >
+                    {item}
+                  </button>
+                )
+              }
+
+              if (item === 'New Arrivals') {
+                return (
+                  <Link to="/newarrival" key={item} className="nav-item">
+                    {item}
+                  </Link>
+                )
+              }
+
+              if (item === 'Trending Now') {
+                return (
+                  <Link to="/trendingnow" key={item} className="nav-item">
+                    {item}
+                  </Link>
+                )
+              }
+
+              return (
+                <a href="#" key={item} className="nav-item">
+                  {item}
+                </a>
+              )
+            })}
+          </nav>
+        )}
+      </div>
+      <div className="logo" onClick={() => navigate('/', { state: { resetCategory: true } })}>
         <img 
           src="/logo.jpg" 
           alt="The Bear House Logo" 
@@ -479,7 +475,124 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
       </div>
       <div className="right-section">
         <div className="header-actions">
-          {/* Search icon */}
+          {/* Search icon on right side for desktop only */}
+          {!isMobile && (
+            <div ref={searchRef} className="header-icon-wrapper">
+              <button
+                type="button"
+                aria-label="Search"
+                className="header-icon-button"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
+                <svg className="header-icon-symbol" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+              
+              {/* Search dropdown */}
+              {isSearchOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: '0',
+                    marginTop: '10px',
+                    width: '400px',
+                    maxWidth: '90vw',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    padding: '20px',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    autoFocus
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      outline: 'none',
+                    }}
+                  />
+                  
+                  {/* Search Results */}
+                  {searchQuery.trim() && (
+                    <div
+                      style={{
+                        maxHeight: '400px',
+                        overflowY: 'auto',
+                        marginTop: '15px',
+                      }}
+                    >
+                      {isSearching ? (
+                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                          <p>Searching...</p>
+                        </div>
+                      ) : searchResults.length > 0 ? (
+                        <div>
+                          <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
+                          </p>
+                          {searchResults.map((product, index) => (
+                            <div
+                              key={product._id || index}
+                              onClick={() => handleSearchResultClick(product)}
+                              style={{
+                                display: 'flex',
+                                gap: '16px',
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #eee',
+                                transition: 'background 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#f5f5f5'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'white'
+                              }}
+                            >
+                              <img
+                                src={product.mainImage}
+                                alt={product.title}
+                                style={{
+                                  width: '60px',
+                                  height: '60px',
+                                  objectFit: 'cover',
+                                  borderRadius: '4px',
+                                }}
+                              />
+                              <div style={{ flex: 1 }}>
+                                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
+                                  {product.title}
+                                </h4>
+                                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#333' }}>
+                                  {product.price ? `₹${(product.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'Price not available'}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                          <p>No products found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Wishlist icon with count */}
           <button
@@ -526,13 +639,60 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                   {userName.charAt(0).toUpperCase()}
                 </span>
               </button>
+
+              {/* Mobile user dropdown backdrop */}
+              {isMobile && isUserDropdownOpen && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    zIndex: 1200,
+                  }}
+                  onClick={() => setIsUserDropdownOpen(false)}
+                />
+              )}
+
               {isUserDropdownOpen && (
-                <div className="user-dropdown">
+                <div
+                  className={isMobile ? '' : 'user-dropdown'}
+                  style={isMobile ? {
+                    position: 'fixed',
+                    top: '4rem',
+                    right: '1rem',
+                    width: '150px',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    zIndex: 1201,
+                    padding: '8px 0',
+                  } : {}}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsUserDropdownOpen(false)
+                      navigate('/orders')
+                    }}
+                    className="user-dropdown-item"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                      <rect x="9" y="3" width="6" height="4" rx="1" />
+                    </svg>
+                    My Orders
+                  </button>
                   <button
                     type="button"
                     onClick={handleLogout}
                     className="user-dropdown-item"
                   >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
                     Logout
                   </button>
                 </div>
@@ -612,7 +772,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                     className="mobile-nav-item"
                     onClick={() => {
                       setIsMenuOpen(false)
-                      navigate('/')
+                      navigate('/', { state: { resetCategory: true } })
                     }}
                   >
                     {item.label}

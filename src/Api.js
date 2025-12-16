@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'https://prectise.onrender.com/v1'
+const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'http://localhost:7410/v1'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
@@ -191,5 +191,63 @@ export const getNewArrivalProducts = async () => {
 // Get trending now products API
 export const getTrendingNowProducts = async () => {
   return apiCall('/product/trandingNow', 'GET')
+}
+
+// Send mail API
+export const sendMail = async (email) => {
+  return apiCall('/email/sendMail', 'POST', {
+    email,
+  })
+}
+
+// ==================== ORDER APIs ====================
+
+// Create order API
+export const createOrder = async (shippingAddress, token) => {
+  return apiCall('/order/create', 'POST', {
+    shippingAddress,
+  }, token)
+}
+
+// Get all orders API
+export const getOrders = async (token, pageNumber = 1, pageSize = 10, status = null) => {
+  const queryParams = new URLSearchParams({
+    pageNumber: pageNumber.toString(),
+    pageSize: pageSize.toString(),
+  })
+  if (status) {
+    queryParams.append('status', status)
+  }
+  return apiCall(`/order/getAll?${queryParams.toString()}`, 'GET', null, token)
+}
+
+// Get single order API
+export const getOrderById = async (orderId, token) => {
+  return apiCall(`/order/view/${orderId}`, 'GET', null, token)
+}
+
+// Cancel order API
+export const cancelOrder = async (orderId, cancelReason, token) => {
+  return apiCall(`/order/cancel/${orderId}`, 'PUT', {
+    cancelReason,
+  }, token)
+}
+
+// ==================== PAYMENT APIs ====================
+
+// Create payment order API (Razorpay)
+export const createPayment = async (orderId, token) => {
+  return apiCall('/payment/create', 'POST', {
+    orderId,
+  }, token)
+}
+
+// Verify payment API (Razorpay)
+export const verifyPayment = async (razorpay_order_id, razorpay_payment_id, razorpay_signature) => {
+  return apiCall('/payment/verify', 'POST', {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+  })
 }
 
