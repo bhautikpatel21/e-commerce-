@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'http://localhost:7410/v1'
+const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'https://prectise-1.onrender.com'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
