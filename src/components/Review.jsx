@@ -9,6 +9,8 @@ const Review = ({ productId }) => {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [comment, setComment] = useState('')
+  const [images, setImages] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
@@ -96,11 +98,13 @@ const Review = ({ productId }) => {
     try {
       setSubmitting(true)
       setError(null)
-      const response = await addReview(productId, rating, comment, token)
+      const response = await addReview(productId, rating, comment, images, token)
       if (response.isSuccess) {
         setSuccess(true)
         setComment('')
         setRating(0)
+        setImages([])
+        setImagePreviews([])
         setShowReviewForm(false)
         // Refresh user ID and reviews
         try {
@@ -259,6 +263,61 @@ const Review = ({ productId }) => {
             />
           </div>
 
+          <div className="mb-4">
+            <label htmlFor="images" className="block text-sm font-medium mb-2">
+              Upload Images
+            </label>
+            <input
+              type="file"
+              id="images"
+              multiple
+              accept="image/*"
+              onChange={(e) => {
+                const files = Array.from(e.target.files).slice(0, 5)
+                setImages(files)
+                
+                // Create previews
+                const previews = []
+                files.forEach((file) => {
+                  const reader = new FileReader()
+                  reader.onloadend = () => {
+                    previews.push(reader.result)
+                    if (previews.length === files.length) {
+                      setImagePreviews(previews)
+                    }
+                  }
+                  reader.readAsDataURL(file)
+                })
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            {imagePreviews.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded border border-gray-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newImages = images.filter((_, i) => i !== index)
+                        const newPreviews = imagePreviews.filter((_, i) => i !== index)
+                        setImages(newImages)
+                        setImagePreviews(newPreviews)
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3">
             <button
               type="submit"
@@ -273,6 +332,8 @@ const Review = ({ productId }) => {
                 setShowReviewForm(false)
                 setComment('')
                 setRating(0)
+                setImages([])
+                setImagePreviews([])
                 setError(null)
               }}
               className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300 transition"
@@ -346,6 +407,24 @@ const Review = ({ productId }) => {
                   </div>
                 </div>
                 <p className="text-gray-700 mt-2">{review.comment || ''}</p>
+                {review.images && review.images.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {review.images.map((imagePath, imgIndex) => {
+                      const fullImageUrl = imagePath.startsWith('http') 
+                        ? imagePath 
+                        : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:7410'}/${imagePath}`
+                      return (
+                        <img
+                          key={imgIndex}
+                          src={fullImageUrl}
+                          alt={`Review image ${imgIndex + 1}`}
+                          className="w-24 h-24 object-cover rounded border border-gray-300 cursor-pointer hover:opacity-80 transition"
+                          onClick={() => window.open(fullImageUrl, '_blank')}
+                        />
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )
           })}

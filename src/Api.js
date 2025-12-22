@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.BASE_URL_BACKEND || 'https://prectise-1.onrender.com/v1'
+const BASE_URL='http://localhost:7410/v1'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
@@ -84,18 +84,46 @@ export const getProducts = async (pageNumber = null, pageSize = null) => {
     const queryParams = new URLSearchParams({
       pageNumber: pageNumber.toString(),
       pageSize: pageSize.toString(),
+      showOnly: 'true', // Only show products with isShow: true
     })
     return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
   }
-  return apiCall('/product/get', 'GET')
+  const queryParams = new URLSearchParams({
+    showOnly: 'true', // Only show products with isShow: true
+  })
+  return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
 }
 
-// Get products by category with pagination
+// Get products by category with pagination for HOME PAGE sections
+// Shows only products with isShow: true
+export const getProductsByCategoryForHome = async (category, pageNumber = 1, pageSize = 6) => {
+  const queryParams = new URLSearchParams({
+    pageNumber: pageNumber.toString(),
+    pageSize: pageSize.toString(),
+    category: category,
+    showOnly: 'true', // Only show products with isShow: true for home page
+  })
+  return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
+}
+
+// Get products by category with pagination for FILTER DROPDOWN
+// Shows ALL products (isShow: true or false) when user selects from filter
 export const getProductsByCategory = async (category, pageNumber = 1, pageSize = 6) => {
   const queryParams = new URLSearchParams({
     pageNumber: pageNumber.toString(),
     pageSize: pageSize.toString(),
     category: category,
+    // Don't include showOnly - show all products when filtering by category
+  })
+  return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
+}
+
+// Get all products without isShow filter (for category filter "all")
+export const getAllProducts = async (pageNumber = 1, pageSize = 30) => {
+  const queryParams = new URLSearchParams({
+    pageNumber: pageNumber.toString(),
+    pageSize: pageSize.toString(),
+    // Don't include showOnly - show all products when "all" is selected from filter
   })
   return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
 }
@@ -106,6 +134,7 @@ export const searchProducts = async (searchQuery, pageNumber = 1, pageSize = 12)
     pageNumber: pageNumber.toString(),
     pageSize: pageSize.toString(),
     search: searchQuery,
+    showOnly: 'true', // Only show products with isShow: true
   })
   return apiCall(`/product/get?${queryParams.toString()}`, 'GET')
 }
@@ -162,12 +191,35 @@ export const removeFromWishlist = async (productId, token) => {
 }
 
 // Add review API
-export const addReview = async (productId, rating, comment, token) => {
-  return apiCall('/review/add', 'POST', {
-    productId,
-    rating,
-    comment,
-  }, token)
+export const addReview = async (productId, rating, comment, images = [], token) => {
+  const formData = new FormData()
+  formData.append('productId', productId)
+  formData.append('rating', rating.toString())
+  formData.append('comment', comment)
+  
+  // Append images
+  images.forEach((image) => {
+    formData.append('images', image)
+  })
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7410/v1'
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+  }
+
+  const response = await fetch(`${BASE_URL}/review/add`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  })
+
+  const data = await response.json()
+  
+  if (!response.ok || !data.isSuccess) {
+    throw new Error(data.message || 'An error occurred')
+  }
+  
+  return data
 }
 
 // Get product reviews API
@@ -251,4 +303,14 @@ export const verifyPayment = async (razorpay_order_id, razorpay_payment_id, razo
   })
 }
 
+export const orderCustomTShirt = async (customTShirt, token) => {
+  return apiCall('/order/customTShirt', 'POST', {
+    customTShirt,
+  }, token)
+}
+
+// Create custom t-shirt order API
+export const createCustomTShirtOrder = async (orderData, token) => {
+  return apiCall('/order/customTShirt', 'POST', orderData, token)
+}
 

@@ -12,7 +12,7 @@ const ScrollableProductImage = ({ product, productId, showDiscountBadge = false 
 
   if (allImages.length <= 1) {
     return (
-      <div className="product-image-container" style={{ position: 'relative', width: '100%' }}>
+      <div className="product-image-container" style={{ position: 'relative', width: '100%', height: '300px', overflow: 'hidden' }}>
         {showDiscountBadge && (
           <div className="discount-badge-animated">
             <div className="discount-badge-rotating-border">
@@ -28,7 +28,7 @@ const ScrollableProductImage = ({ product, productId, showDiscountBadge = false 
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
             backgroundColor: '#f8f8f8',
           }}
           loading="lazy"

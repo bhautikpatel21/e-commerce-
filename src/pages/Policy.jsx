@@ -7,86 +7,107 @@ import '../App.css'
 const Policy = () => {
   const policies = [
     {
-      title: "Shipping Policy",
-      content: [
-        {
-          heading: "Processing Time",
-          text: "Orders are typically processed within 1-2 business days after payment confirmation. Custom orders may take longer."
-        },
-        {
-          heading: "Shipping Rates",
-          text: "Shipping costs are calculated based on order weight, dimensions, and destination. Free shipping is available on orders above ₹500 within India."
-        },
-        {
-          heading: "Delivery Time",
-          text: "Domestic shipping: 3-5 business days. International shipping: 7-14 business days. Delivery times may vary during peak seasons."
-        },
-        {
-          heading: "International Shipping",
-          text: "We ship worldwide. Import duties and taxes are the responsibility of the recipient. Additional charges may apply."
-        }
-      ]
-    },
-    {
-      title: "Return & Exchange Policy",
-      content: [
-        {
-          heading: "Return Window",
-          text: "Items can be returned within 30 days of delivery. Items must be unused, unworn, and in original packaging with tags attached."
-        },
-        {
-          heading: "Exchange Process",
-          text: "Exchanges are accepted within 30 days. Contact our support team to initiate an exchange. Size exchanges are preferred over returns."
-        },
-        {
-          heading: "Return Shipping",
-          text: "Return shipping is free within India for defective items. For other returns, customers are responsible for return shipping costs."
-        },
-        {
-          heading: "Refunds",
-          text: "Refunds are processed within 5-7 business days after receiving the returned item. Original payment method will be used for refunds."
-        }
-      ]
-    },
-    {
       title: "Privacy Policy",
       content: [
         {
-          heading: "Information Collection",
-          text: "We collect personal information necessary for order processing, including name, email, shipping address, and payment information."
+          heading: "Introduction",
+          text: "At The Wolf Street, we respect your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, store, and protect your data when you visit or make a purchase from our website."
         },
         {
-          heading: "Data Usage",
-          text: "Your information is used solely for order fulfillment, customer service, and to improve our services. We do not sell or share personal data."
+          heading: "Information We Collect",
+          text: "We may collect the following information: Personal details such as name, email address, phone number, and shipping/billing address; Payment information (processed securely through third‑party payment gateways; we do not store card details); Order history and purchase preferences; Device information such as IP address, browser type, and cookies."
+        },
+        {
+          heading: "How We Use Your Information",
+          text: "Your information is used to: Process and deliver orders; Communicate order updates and customer support; Improve our website, products, and services; Send promotional emails (only if you opt‑in); Prevent fraud and ensure secure transactions."
         },
         {
           heading: "Data Security",
-          text: "We implement industry-standard security measures to protect your personal information. Payment data is encrypted and processed securely."
+          text: "We implement appropriate security measures to protect your personal data. However, no method of transmission over the internet is 100% secure."
         },
         {
-          heading: "Cookies",
-          text: "We use cookies to enhance your browsing experience and analyze website traffic. You can disable cookies in your browser settings."
+          heading: "Third‑Party Sharing",
+          text: "We do not sell or trade your personal information. Data may be shared only with trusted partners such as payment gateways and shipping providers to fulfill your order."
+        },
+        {
+          heading: "Your Rights",
+          text: "You may request access, correction, or deletion of your personal data by contacting us."
         }
       ]
     },
     {
-      title: "Terms of Service",
+      title: "Return & Refund Policy",
       content: [
         {
-          heading: "Acceptance of Terms",
-          text: "By accessing and using our website, you accept and agree to be bound by the terms and provision of this agreement."
+          heading: "Eligibility for Returns",
+          text: "Items must be returned within 7 days of delivery. Products must be unused, unworn, and in original packaging with tags. Sale or discounted items may not be eligible for return."
         },
         {
-          heading: "Product Information",
-          text: "We strive to provide accurate product descriptions and images. Colors may vary slightly due to monitor settings and photography lighting."
+          heading: "Refund Process",
+          text: "Once we receive and inspect the returned item, we will notify you of approval or rejection. Approved refunds will be processed to the original payment method within 5–7 business days."
         },
         {
-          heading: "Pricing",
-          text: "All prices are subject to change without notice. The price listed at the time of purchase will be honored for that transaction."
+          heading: "Exchange Policy",
+          text: "Exchanges are subject to product availability. If unavailable, a refund will be issued."
+        }
+      ]
+    },
+    {
+      title: "Terms and Conditions",
+      content: [
+        {
+          heading: "General",
+          text: "By accessing and using the The Wolf Street website, you agree to comply with these Terms and Conditions."
+        },
+        {
+          heading: "Products & Pricing",
+          text: "All prices are listed in applicable currency and include taxes unless stated otherwise. Prices and product availability are subject to change without notice."
+        },
+        {
+          heading: "Orders",
+          text: "We reserve the right to cancel orders due to stock issues, pricing errors, or suspected fraud. Order confirmation does not guarantee acceptance of the order."
+        },
+        {
+          heading: "Intellectual Property",
+          text: "All content on this website (logos, images, text) is the property of The Wolf Street and may not be used without permission."
         },
         {
           heading: "Limitation of Liability",
-          text: "The Bear House shall not be liable for any indirect, incidental, special, or consequential damages arising from the use of our products."
+          text: "The Wolf Street is not liable for indirect or incidental damages arising from the use of our products or website."
+        }
+      ]
+    },
+    {
+      title: "Contact Information",
+      content: [
+        {
+          heading: "Get in Touch",
+          text: "If you have any questions or concerns, you can contact us using the details below: Brand Name: The Wolf Street; Email: thewolfstreetindia@gmail.com; Phone: +919904699062; Business Hours: Monday to Saturday, 9:00 AM – 6:00 PM. We aim to respond to all queries within 24–48 hours."
+        }
+      ]
+    },
+    {
+      title: "Shipping Policy",
+      content: [
+        {
+          heading: "Shipping Locations",
+          text: "We currently ship across India. International shipping may be available in the future."
+        },
+        {
+          heading: "Processing Time",
+          text: "Orders are processed within 1–3 business days after confirmation. Orders placed on weekends or holidays will be processed on the next business day."
+        },
+        {
+          heading: "Delivery Time",
+          text: "Standard delivery: 4–7 business days depending on location. Delays may occur due to unforeseen circumstances or courier issues."
+        },
+        {
+          heading: "Shipping Charges",
+          text: "Shipping charges (if applicable) will be displayed at checkout."
+        },
+        {
+          heading: "Tracking",
+          text: "Once your order is shipped, you will receive a tracking link via email or SMS."
         }
       ]
     }
@@ -164,7 +185,7 @@ const Policy = () => {
             <p className="text-gray-600 mb-6">If you have any questions about our policies or need assistance, please don't hesitate to contact us.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.a
-                href="mailto:support@thebearhouse.com"
+                href="mailto:thewolfstreetindia@gmail.com"
                 className="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -172,7 +193,7 @@ const Policy = () => {
                 Email Support
               </motion.a>
               <motion.a
-                href="tel:+919876543210"
+                href="tel:+919904699062"
                 className="inline-block border border-black text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition-colors duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -187,11 +208,12 @@ const Policy = () => {
       <Footer />
 
       <footer className="site-footer fade-up">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
+        <p>Crafted & marketed by The Wolf Street · India</p>
+        <small>Reference design inspired by MITOK product page on The Wolf Street</small>
       </footer>
     </div>
   )
 }
 
 export default Policy
+

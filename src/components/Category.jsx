@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getProducts, getProductsByCategory } from '../Api'
+import { getProductsByCategory, getAllProducts } from '../Api'
 import ScrollableProductImage from './ScrollableProductImage'
 import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discount'
 
@@ -34,10 +34,11 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
         let response
         
         if (selectedCategory === 'all') {
-          // Call /product/get with pagination for "all"
-          response = await getProducts(currentPage, pageSize)
+          // Call getAllProducts - shows ALL products when "all" is selected from filter
+          response = await getAllProducts(currentPage, pageSize)
         } else {
           // Call /product/get?pageNumber=X&category=Y for specific categories
+          // This doesn't include showOnly, so it shows all products
           response = await getProductsByCategory(selectedCategory, currentPage, pageSize)
         }
 

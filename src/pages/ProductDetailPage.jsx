@@ -23,6 +23,18 @@ function ProductDetailPage() {
   const [celebrate, setCelebrate] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
   const [reviews, setReviews] = useState([])
+  const [expandedSections, setExpandedSections] = useState({
+    description: false,
+    shipping: false,
+    care: false,
+  })
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }))
+  }
 
   // Check if today is Friday on component mount
   useEffect(() => {
@@ -390,23 +402,27 @@ function ProductDetailPage() {
               ))}
             </div>
 
-            <div className="size-selector">
-              <div className="selector-header">
-                <span className="crumbs">Size</span>
-                <button type="button" className="ghost tiny">
+            <div className="my-8 border border-gray-200 rounded-3xl p-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-xs text-gray-500 uppercase tracking-wider">Size</span>
+                <button 
+                  type="button" 
+                  className="text-xs text-gray-600 hover:text-gray-900 underline bg-transparent border-none cursor-pointer"
+                >
                   Size chart
                 </button>
               </div>
-              <div className="size-grid">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(64px,1fr))] gap-3">
                 {product.sizes.map((size) => (
                   <button
                     key={size}
                     type="button"
-                    className={`size-pill ${selectedSize === size ? 'selected' : ''}`}
+                    className={`rounded-2xl border-2 px-4 py-3 font-semibold cursor-pointer transition-all duration-200 ${
+                      selectedSize === size
+                        ? 'bg-black text-white border-black shadow-lg scale-105'
+                        : 'bg-white text-gray-900 border-gray-300 hover:border-gray-400 hover:shadow-md hover:-translate-y-0.5'
+                    }`}
                     onClick={() => setSelectedSize(size)}
-                    style={{
-                      transition: 'all 0.2s ease',
-                    }}
                   >
                     {size}
                   </button>
@@ -445,8 +461,213 @@ function ProductDetailPage() {
               Crafted for everyday comfort. Ships in 2–4 business days
               from our Bengaluru studio.
             </p>
+
+            {/* Product Information Accordion Section */}
+            <div style={{ 
+              marginTop: '24px',
+              border: '1px solid #e5e5e5',
+              borderRadius: '0',
+              overflow: 'hidden',
+              background: '#fff',
+              width: '100%',
+            }}>
+              {/* Description Section */}
+              {product.proDes && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('description')}
+                    style={{
+                      width: '100%',
+                      padding: '16px 20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#fff',
+                      border: 'none',
+                      borderBottom: '1px solid #e5e5e5',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f9f9f9'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                  >
+                    <span style={{
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      letterSpacing: '1px',
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      DESCRIPTION
+                    </span>
+                    <svg
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        color: '#1a1a1a',
+                        transition: 'transform 0.3s ease',
+                        transform: expandedSections.description ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedSections.description && (
+                    <div style={{
+                      padding: '20px',
+                      background: '#fff',
+                      borderBottom: '1px solid #e5e5e5',
+                    }}>
+                      <div style={{
+                        fontSize: '14px',
+                        lineHeight: '1.8',
+                        color: '#333',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {product.proDes}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Shipping Information Section */}
+              {product.shipingInfo && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('shipping')}
+                    style={{
+                      width: '100%',
+                      padding: '16px 20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#fff',
+                      border: 'none',
+                      borderBottom: product.proDes ? '1px solid #e5e5e5' : 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f9f9f9'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                  >
+                    <span style={{
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      letterSpacing: '1px',
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      SHIPPING INFORMATION
+                    </span>
+                    <svg
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        color: '#1a1a1a',
+                        transition: 'transform 0.3s ease',
+                        transform: expandedSections.shipping ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedSections.shipping && (
+                    <div style={{
+                      padding: '20px',
+                      background: '#fff',
+                      borderBottom: product.productCare ? '1px solid #e5e5e5' : 'none',
+                    }}>
+                      <div style={{
+                        fontSize: '14px',
+                        lineHeight: '1.8',
+                        color: '#333',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {product.shipingInfo}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Product Care Section */}
+              {product.productCare && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('care')}
+                    style={{
+                      width: '100%',
+                      padding: '16px 20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#fff',
+                      border: 'none',
+                      borderBottom: (product.proDes || product.shipingInfo) ? '1px solid #e5e5e5' : 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f9f9f9'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                  >
+                    <span style={{
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      letterSpacing: '1px',
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      PRODUCT CARE
+                    </span>
+                    <svg
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        color: '#1a1a1a',
+                        transition: 'transform 0.3s ease',
+                        transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedSections.care && (
+                    <div style={{
+                      padding: '20px',
+                      background: '#fff',
+                    }}>
+                      <div style={{
+                        fontSize: '14px',
+                        lineHeight: '1.8',
+                        color: '#333',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {product.productCare}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </section>
+
 
         <Review productId={productId} />
 
@@ -627,7 +848,7 @@ function ProductDetailPage() {
                 {/* View All Button */}
                 <div style={{ textAlign: 'center', marginTop: '30px' }}>
                   <button
-                    onClick={() => navigate('/products')}
+                    onClick={() => navigate('/', { state: { resetCategory: true } })}
                     style={{
                       background: 'transparent',
                       border: '2px solid #1a1a1a',

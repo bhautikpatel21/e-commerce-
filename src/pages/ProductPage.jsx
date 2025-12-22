@@ -7,7 +7,7 @@ import Footer from '../components/Footer'
 import Category from '../components/Category'
 import ScrollableProductImage from '../components/ScrollableProductImage'
 import '../App.css'
-import { getProducts, getProductsByCategory } from '../Api'
+import { getProducts, getProductsByCategoryForHome } from '../Api'
 import Subcribe from '../components/Subcribe'
 import Toast from '../components/Toast'
 import Celebration from '../components/Celebration'
@@ -40,137 +40,6 @@ function ProductPage() {
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const sliderImages = ['/images/poster1.jpg', '/images/poster2.jpg', '/images/poster3.jpg', '/images/poster4.jpg']
-
-  // T-Shirt Customization States
-  const [customTshirtColor, setCustomTshirtColor] = useState('#ffffff')
-  const [customSize, setCustomSize] = useState('M')
-  const [customQuantity, setCustomQuantity] = useState(1)
-  const [uploadedImage, setUploadedImage] = useState(null)
-  const [activeElementId, setActiveElementId] = useState(null)
-  
-  // Multiple design elements (text, logo, uploaded images)
-  const [designElements, setDesignElements] = useState([])
-
-  const tshirtColors = [
-    { name: 'White', value: '#ffffff' },
-    { name: 'Black', value: '#1a1a1a' },
-    { name: 'Navy', value: '#1e3a5f' },
-    { name: 'Red', value: '#dc2626' },
-    { name: 'Forest Green', value: '#166534' },
-    { name: 'Sky Blue', value: '#0ea5e9' },
-    { name: 'Purple', value: '#7c3aed' },
-    { name: 'Orange', value: '#ea580c' },
-  ]
-
-  const fontOptions = [
-    { name: 'Classic', value: 'Georgia, serif' },
-    { name: 'Modern', value: 'Arial, sans-serif' },
-    { name: 'Bold', value: 'Impact, sans-serif' },
-    { name: 'Elegant', value: 'Times New Roman, serif' },
-    { name: 'Fun', value: 'Comic Sans MS, cursive' },
-    { name: 'Tech', value: 'Courier New, monospace' },
-  ]
-
-  const positionOptions = [
-    { id: 'top-left', name: 'Top Left', style: { top: '25%', left: '20%' } },
-    { id: 'top-center', name: 'Top Center', style: { top: '25%', left: '50%', transform: 'translateX(-50%)' } },
-    { id: 'top-right', name: 'Top Right', style: { top: '25%', right: '20%' } },
-    { id: 'center-left', name: 'Center Left', style: { top: '50%', left: '20%', transform: 'translateY(-50%)' } },
-    { id: 'center', name: 'Center', style: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } },
-    { id: 'center-right', name: 'Center Right', style: { top: '50%', right: '20%', transform: 'translateY(-50%)' } },
-    { id: 'bottom-left', name: 'Bottom Left', style: { bottom: '30%', left: '20%' } },
-    { id: 'bottom-center', name: 'Bottom Center', style: { bottom: '30%', left: '50%', transform: 'translateX(-50%)' } },
-    { id: 'bottom-right', name: 'Bottom Right', style: { bottom: '30%', right: '20%' } },
-  ]
-
-  const elementSizeOptions = [
-    { id: 'xs', name: 'XS', scale: 0.5 },
-    { id: 'sm', name: 'S', scale: 0.75 },
-    { id: 'md', name: 'M', scale: 1 },
-    { id: 'lg', name: 'L', scale: 1.25 },
-    { id: 'xl', name: 'XL', scale: 1.5 },
-    { id: 'xxl', name: 'XXL', scale: 2 },
-  ]
-
-  const addTextElement = () => {
-    const newElement = {
-      id: Date.now(),
-      type: 'text',
-      content: 'Your Text',
-      color: '#000000',
-      font: 'Georgia, serif',
-      position: 'center',
-      size: 'md',
-    }
-    setDesignElements([...designElements, newElement])
-    setActiveElementId(newElement.id)
-  }
-
-  const addLogoElement = (logoType) => {
-    const logos = {
-      'star': '⭐',
-      'heart': '❤️',
-      'fire': '🔥',
-      'crown': '👑',
-      'lightning': '⚡',
-      'music': '🎵',
-    }
-    const newElement = {
-      id: Date.now(),
-      type: 'logo',
-      content: logos[logoType] || '🎨',
-      position: 'center',
-      size: 'md',
-    }
-    setDesignElements([...designElements, newElement])
-    setActiveElementId(newElement.id)
-  }
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const newElement = {
-          id: Date.now(),
-          type: 'image',
-          content: reader.result,
-          position: 'center',
-          size: 'md',
-        }
-        setDesignElements([...designElements, newElement])
-        setActiveElementId(newElement.id)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const updateElement = (id, updates) => {
-    setDesignElements(designElements.map(el => 
-      el.id === id ? { ...el, ...updates } : el
-    ))
-  }
-
-  const removeElement = (id) => {
-    setDesignElements(designElements.filter(el => el.id !== id))
-    if (activeElementId === id) setActiveElementId(null)
-  }
-
-  const getActiveElement = () => designElements.find(el => el.id === activeElementId)
-
-  const handleCustomizeAddToCart = () => {
-    const customProduct = {
-      title: 'Custom T-Shirt',
-      color: customTshirtColor,
-      elements: designElements,
-      size: customSize,
-      quantity: customQuantity,
-      price: 29.99 + (designElements.length * 2),
-    }
-    setToast({ show: true, message: 'Custom T-Shirt added to cart!', type: 'success' })
-    setCelebrate(prev => prev + 1)
-    console.log('Custom T-Shirt:', customProduct)
-  }
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % sliderImages.length)
@@ -307,19 +176,19 @@ function ProductPage() {
         setCategoryLoading(true)
 
         // Fetch shirt products
-        const shirtResponse = await getProductsByCategory('shirt', 1, 8)
+        const shirtResponse = await getProductsByCategoryForHome('shirt', 1, 8)
         if (shirtResponse.isSuccess && shirtResponse.data) {
           setShirtProducts(Array.isArray(shirtResponse.data) ? shirtResponse.data : shirtResponse.data.products || [])
         }
 
         // Fetch t-shirt products
-        const tshirtResponse = await getProductsByCategory('t-shirt', 1, 8)
+        const tshirtResponse = await getProductsByCategoryForHome('t-shirt', 1, 8)
         if (tshirtResponse.isSuccess && tshirtResponse.data) {
           setTshirtProducts(Array.isArray(tshirtResponse.data) ? tshirtResponse.data : tshirtResponse.data.products || [])
         }
 
         // Fetch hoodie products
-        const hoodieResponse = await getProductsByCategory('hoodie', 1, 6)
+        const hoodieResponse = await getProductsByCategoryForHome('hoodie', 1, 6)
         if (hoodieResponse.isSuccess && hoodieResponse.data) {
           setHoodieProducts(Array.isArray(hoodieResponse.data) ? hoodieResponse.data : hoodieResponse.data.products || [])
         }
@@ -383,38 +252,28 @@ function ProductPage() {
       <Navbar onSelectCategory={setSelectedCategory} />
 
       {/* Image Slider */}
-      <div style={{ position: 'relative', width: '100%', height: '500px', overflow: 'hidden', marginBottom: '20px' }}>
+      <div className="slider-container" style={{ position: 'relative', width: '100%', height: '500px', overflow: 'hidden', marginBottom: '20px' }}>
         <img
           src={sliderImages[currentImageIndex]}
           alt={`Poster ${currentImageIndex + 1}`}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px' }}>
-          {sliderImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                border: 'none',
-                background: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
-                cursor: 'pointer'
-              }}
-            />
-          ))}
-        </div>
       </div>
 
-      <div style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '20px', borderRadius: '8px', margin: '20px 0' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
-          <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>👕</span>
-          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Made with Premium Fabric</p>
+      <div className="feature-boxes" style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '20px', borderRadius: '8px', margin: '20px 0', maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px', minHeight: '150px' }}>
+          <img 
+            src="/images/embroidery.jpg" 
+            alt="Premium Fabric" 
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
-          <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>🚚</span>
-          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Shipping within 24 hours</p>
+        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px', minHeight: '150px' }}>
+          <img 
+            src="/images/shiping.jpg" 
+            alt="Fast Shipping" 
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
         </div>
       </div>
       <main>
@@ -428,23 +287,13 @@ function ProductPage() {
           <>
             {/* Featured product hero section (top of page) */}
 
-
             {/* Shirt Section */}
-            <div style={{ marginBottom: '20px' }}>
+            <div className="category-section-container" style={{ marginBottom: '20px' }}>
               <div
-                className="animated-dots-bg mt-10 mb-5 mx-2.5 cursor-pointer"
+                className="mt-10 mb-5 mx-2.5 cursor-pointer"
                 onClick={() => setSelectedCategory('shirt')}
               >
-                {/* 7 Animated Floating Dots */}
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                
-                <h2 className="category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
+                <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
                   Our Collections
                 </h2>
               </div>
@@ -476,7 +325,7 @@ function ProductPage() {
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                      gap: '0',
+                      gap: '20px',
                       maxWidth: '1200px',
                       margin: '0 auto',
                     }}
@@ -492,7 +341,7 @@ function ProductPage() {
                           background: 'white',
                           cursor: 'pointer',
                           position: 'relative',
-                          margin: '-0.5px',
+                          borderRadius: '12px',
                         }}
                         onClick={() => navigate(`/product/${product._id}`)}
                       >
@@ -536,7 +385,7 @@ function ProductPage() {
             </div>
 
             {/* Promotional Banner Section */}
-            <div style={{ textAlign: 'center', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', margin: '0 auto 20px' }}>
+            <div className="promotional-banner" style={{ textAlign: 'center', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', margin: '0 auto 20px', maxWidth: '1200px' }}>
               <h3 style={{ fontSize: '1.2em', margin: '0 0 15px 0' }}>Make Way for New Drip</h3>
               <h2 style={{ fontSize: '1.5em', fontWeight: 'bold', margin: '0 0 10px 0', textTransform: 'uppercase' }}>Explore the Season's New Styles</h2>
               <p style={{ fontSize: '1.2em', fontWeight: 'bold', margin: '0 0 10px 0' }}>Extra 10% on Orders Above $2599</p>
@@ -544,21 +393,12 @@ function ProductPage() {
             </div>
 
             {/* T-shirt Section */}
-            <div style={{ marginBottom: '20px' }}>
+            <div className="category-section-container" style={{ marginBottom: '20px' }}>
               <div
-                className="animated-dots-bg mt-10 mb-5 mx-2.5 cursor-pointer"
+                className="mt-10 mb-5 mx-2.5 cursor-pointer"
                 onClick={() => setSelectedCategory('t-shirt')}
               >
-                {/* 7 Animated Floating Dots */}
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                
-                <h2 className="category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
+                <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
                   T-Shirt
                 </h2>
               </div>
@@ -590,7 +430,7 @@ function ProductPage() {
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                      gap: '0',
+                      gap: '20px',
                       maxWidth: '1200px',
                       margin: '0 auto',
                     }}
@@ -606,7 +446,7 @@ function ProductPage() {
                           background: 'white',
                           cursor: 'pointer',
                           position: 'relative',
-                          margin: '-0.5px',
+                          borderRadius: '12px',
                         }}
                         onClick={() => navigate(`/product/${product._id}`)}
                       >
@@ -631,7 +471,7 @@ function ProductPage() {
                     ))}
                   </section>
                   <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <button className='bg-gray-700'
+                    <button className='bg-gray-700 view-more-button'
                       onClick={() => setSelectedCategory('t-shirt')}
                       style={{
                         padding: '10px 30px',
@@ -640,6 +480,15 @@ function ProductPage() {
                         borderRadius: '5px',
                         cursor: 'pointer',
                         fontSize: '1em',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#4a5568'
+                        e.target.style.transform = 'scale(1.05)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#374151'
+                        e.target.style.transform = 'scale(1)'
                       }}
                     >
                       View More
@@ -649,406 +498,210 @@ function ProductPage() {
               )}
             </div>
 
-            {/* T-Shirt Customization Section */}
-            <div className="customize-section">
-              <div className="customize-header">
-                <div className="customize-badge">NEW</div>
-                <h2 className="customize-title">Design Your Own T-Shirt</h2>
-                <p className="customize-subtitle">Create a unique piece that's 100% you. Add multiple texts, logos, and upload your own designs!</p>
-              </div>
+            {/* Customize Section - Enhanced Design */}
+            <div 
+              className="customize-section"
+              style={{ 
+                maxWidth: '1200px', 
+                margin: '60px auto', 
+                padding: '0 1rem',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+                borderRadius: '16px',
+                border: '1px solid #e0e0e0',
+                overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }}
+            >
+              <div className="customize-section-inner" style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr', 
+                gap: '40px', 
+                padding: '50px 40px',
+                alignItems: 'center'
+              }}>
+                {/* Left Side - Content */}
+                <div>
+                  <div className="customize-badge-new" style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    background: '#fff4e6',
+                    color: '#d35400',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.85em',
+                    fontWeight: 'bold',
+                    marginBottom: '20px',
+                    border: '1px dashed #f0b27a'
+                  }}>
+                    <span>🎨</span>
+                    <span>NEW FEATURE</span>
+                  </div>
+                  <h2 className="customize-title" style={{ 
+                    fontSize: '2.2em', 
+                    fontWeight: 'bold', 
+                    color: '#333', 
+                    marginBottom: '15px',
+                    lineHeight: '1.2'
+                  }}>
+                    Design Your Own T-Shirt
+                  </h2>
+                  <p className="customize-description" style={{ 
+                    fontSize: '1.1em', 
+                    color: '#666', 
+                    marginBottom: '30px',
+                    lineHeight: '1.6'
+                  }}>
+                    Create a unique piece that's 100% you. Add custom text, logos, upload your own designs, and choose from multiple colors and sizes.
+                  </p>
+                  <div className="customize-features" style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '15px', 
+                    marginBottom: '30px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#555' }}>
+                      <span style={{ fontSize: '1.2em' }}>✓</span>
+                      <span style={{ fontSize: '0.95em' }}>Multiple Colors</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#555' }}>
+                      <span style={{ fontSize: '1.2em' }}>✓</span>
+                      <span style={{ fontSize: '0.95em' }}>Custom Text & Images</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#555' }}>
+                      <span style={{ fontSize: '1.2em' }}>✓</span>
+                      <span style={{ fontSize: '0.95em' }}>All Sizes Available</span>
+                    </div>
+                  </div>
+                  <button
+                    className="customize-button"
+                    onClick={() => navigate('/customize')}
+                    style={{
+                      padding: '16px 50px',
+                      fontSize: '1.1em',
+                      fontWeight: 'bold',
+                      background: '#374151',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      boxShadow: '0 4px 15px rgba(55, 65, 81, 0.3)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#4a5568'
+                      e.target.style.transform = 'translateY(-2px)'
+                      e.target.style.boxShadow = '0 6px 20px rgba(55, 65, 81, 0.4)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#374151'
+                      e.target.style.transform = 'translateY(0)'
+                      e.target.style.boxShadow = '0 4px 15px rgba(55, 65, 81, 0.3)'
+                    }}
+                  >
+                    <span>Start Customizing</span>
+                  </button>
+                </div>
 
-              <div className="customize-container">
-                {/* T-Shirt Preview */}
-                <div className="customize-preview">
-                  <div className="tshirt-display">
-                    <div className="tshirt-shape">
-                      <svg viewBox="0 0 200 220" className="tshirt-svg">
+                {/* Right Side - Visual Preview */}
+                <div className="customize-preview-container" style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    width: '280px',
+                    height: '320px',
+                    background: 'repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.02) 20px, rgba(0,0,0,0.02) 21px), repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.02) 20px, rgba(0,0,0,0.02) 21px)',
+                    border: '3px dashed #d4c4b5',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{ 
+                      width: '180px', 
+                      height: '200px',
+                      position: 'relative'
+                    }}>
+                      <svg viewBox="0 0 200 220" style={{ width: '100%', height: '100%' }}>
                         <path 
                           d="M50 0 L0 50 L20 60 L20 220 L180 220 L180 60 L200 50 L150 0 L130 20 Q100 35 70 20 Z" 
-                          fill={customTshirtColor}
-                          stroke={customTshirtColor === '#ffffff' ? '#d4c4b5' : 'transparent'}
+                          fill="#ffffff"
+                          stroke="#d4c4b5"
                           strokeWidth="2"
                         />
                       </svg>
-                      {/* Render all design elements */}
-                      {designElements.map((element) => {
-                        const position = positionOptions.find(p => p.id === element.position)?.style || {}
-                        const sizeScale = elementSizeOptions.find(s => s.id === element.size)?.scale || 1
-                        
-                        return (
-                          <div
-                            key={element.id}
-                            className={`design-element ${activeElementId === element.id ? 'active' : ''}`}
-                            style={{
-                              ...position,
-                              transform: `${position.transform || ''} scale(${sizeScale})`.trim(),
-                            }}
-                            onClick={() => setActiveElementId(element.id)}
-                          >
-                            {element.type === 'text' && (
-                              <span 
-                                style={{ 
-                                  color: element.color,
-                                  fontFamily: element.font,
-                                  fontSize: '14px',
-                                  fontWeight: 'bold',
-                                }}
-                              >
-                                {element.content}
-                              </span>
-                            )}
-                            {element.type === 'logo' && (
-                              <span style={{ fontSize: '24px' }}>{element.content}</span>
-                            )}
-                            {element.type === 'image' && (
-                              <img 
-                                src={element.content} 
-                                alt="Custom design"
-                                style={{ 
-                                  maxWidth: '60px', 
-                                  maxHeight: '60px',
-                                  objectFit: 'contain',
-                                }}
-                              />
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                  <p className="preview-label">Live Preview • Click element to edit</p>
-                  
-                  {/* Elements List */}
-                  {designElements.length > 0 && (
-                    <div className="elements-list">
-                      <p className="elements-list-title">Added Elements ({designElements.length})</p>
-                      {designElements.map((el, idx) => (
-                        <div 
-                          key={el.id} 
-                          className={`element-item ${activeElementId === el.id ? 'active' : ''}`}
-                          onClick={() => setActiveElementId(el.id)}
-                        >
-                          <span className="element-icon">
-                            {el.type === 'text' ? '✏️' : el.type === 'logo' ? el.content : '🖼️'}
-                          </span>
-                          <span className="element-name">
-                            {el.type === 'text' ? el.content.substring(0, 10) + (el.content.length > 10 ? '...' : '') : 
-                             el.type === 'logo' ? 'Logo' : 'Image'}
-                          </span>
-                          <button 
-                            className="element-remove"
-                            onClick={(e) => { e.stopPropagation(); removeElement(el.id); }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Customization Options */}
-                <div className="customize-options">
-                  {/* Color Selection */}
-                  <div className="option-group">
-                    <h3 className="option-title">
-                      <span className="option-number">1</span>
-                      T-Shirt Color
-                    </h3>
-                    <div className="color-grid">
-                      {tshirtColors.map((color) => (
-                        <button
-                          key={color.value}
-                          className={`color-btn ${customTshirtColor === color.value ? 'active' : ''}`}
-                          style={{ backgroundColor: color.value }}
-                          onClick={() => setCustomTshirtColor(color.value)}
-                          title={color.name}
-                        >
-                          {customTshirtColor === color.value && <span className="check-mark">✓</span>}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Add Elements */}
-                  <div className="option-group">
-                    <h3 className="option-title">
-                      <span className="option-number">2</span>
-                      Add Design Elements
-                    </h3>
-                    <div className="add-elements-row">
-                      <button className="add-element-btn" onClick={addTextElement}>
-                        <span>✏️</span> Add Text
-                      </button>
-                      <label className="add-element-btn upload-btn">
-                        <span>📷</span> Upload Image
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleImageUpload}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                    </div>
-                    <div className="logo-grid">
-                      <p className="logo-grid-label">Quick Add Logos:</p>
-                      <div className="logo-buttons">
-                        {['star', 'heart', 'fire', 'crown', 'lightning', 'music'].map((logo) => (
-                          <button 
-                            key={logo}
-                            className="logo-btn"
-                            onClick={() => addLogoElement(logo)}
-                          >
-                            {logo === 'star' && '⭐'}
-                            {logo === 'heart' && '❤️'}
-                            {logo === 'fire' && '🔥'}
-                            {logo === 'crown' && '👑'}
-                            {logo === 'lightning' && '⚡'}
-                            {logo === 'music' && '🎵'}
-                          </button>
-                        ))}
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        fontSize: '2em',
+                        opacity: 0.3
+                      }}>
+                        🎨
                       </div>
                     </div>
                   </div>
-
-                  {/* Edit Selected Element */}
-                  {getActiveElement() && (
-                    <div className="option-group text-option-animate">
-                      <h3 className="option-title">
-                        <span className="option-number">3</span>
-                        Edit Selected Element
-                      </h3>
-                      
-                      {/* Text specific options */}
-                      {getActiveElement().type === 'text' && (
-                        <>
-                          <input
-                            type="text"
-                            className="custom-text-input"
-                            placeholder="Enter your text..."
-                            value={getActiveElement().content}
-                            onChange={(e) => updateElement(activeElementId, { content: e.target.value })}
-                            maxLength={25}
-                          />
-                          <div className="text-options-row">
-                            <div className="text-color-row">
-                              <span>Color:</span>
-                              <input
-                                type="color"
-                                value={getActiveElement().color}
-                                onChange={(e) => updateElement(activeElementId, { color: e.target.value })}
-                                className="text-color-picker"
-                              />
-                            </div>
-                            <div className="font-selector">
-                              <span>Font:</span>
-                              <select
-                                value={getActiveElement().font}
-                                onChange={(e) => updateElement(activeElementId, { font: e.target.value })}
-                                className="font-select"
-                              >
-                                {fontOptions.map((font) => (
-                                  <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-                                    {font.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Position Selection */}
-                      <div className="position-selector">
-                        <p className="position-label">Position:</p>
-                        <div className="position-grid">
-                          {positionOptions.map((pos) => {
-                            const arrowIcons = {
-                              'top-left': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="17" y1="17" x2="7" y2="7"></line>
-                                  <polyline points="7 17 7 7 17 7"></polyline>
-                                </svg>
-                              ),
-                              'top-center': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="12" y1="19" x2="12" y2="5"></line>
-                                  <polyline points="5 12 12 5 19 12"></polyline>
-                                </svg>
-                              ),
-                              'top-right': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                                  <polyline points="7 7 17 7 17 17"></polyline>
-                                </svg>
-                              ),
-                              'center-left': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                                  <polyline points="12 19 5 12 12 5"></polyline>
-                                </svg>
-                              ),
-                              'center': (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                  <circle cx="12" cy="12" r="8"></circle>
-                                </svg>
-                              ),
-                              'center-right': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                                  <polyline points="12 5 19 12 12 19"></polyline>
-                                </svg>
-                              ),
-                              'bottom-left': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="17" y1="7" x2="7" y2="17"></line>
-                                  <polyline points="17 17 7 17 7 7"></polyline>
-                                </svg>
-                              ),
-                              'bottom-center': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                                  <polyline points="19 12 12 19 5 12"></polyline>
-                                </svg>
-                              ),
-                              'bottom-right': (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="7" y1="7" x2="17" y2="17"></line>
-                                  <polyline points="17 7 17 17 7 17"></polyline>
-                                </svg>
-                              ),
-                            }
-                            return (
-                              <button
-                                key={pos.id}
-                                className={`position-btn ${getActiveElement().position === pos.id ? 'active' : ''}`}
-                                onClick={() => updateElement(activeElementId, { position: pos.id })}
-                                title={pos.name}
-                              >
-                                {arrowIcons[pos.id]}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Element Size */}
-                      <div className="element-size-selector">
-                        <p className="position-label">Element Size:</p>
-                        <div className="element-size-grid">
-                          {elementSizeOptions.map((size) => (
-                            <button
-                              key={size.id}
-                              className={`element-size-btn ${getActiveElement().size === size.id ? 'active' : ''}`}
-                              onClick={() => updateElement(activeElementId, { size: size.id })}
-                            >
-                              {size.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* T-Shirt Size Selection */}
-                  <div className="option-group">
-                    <h3 className="option-title">
-                      <span className="option-number">{getActiveElement() ? '4' : '3'}</span>
-                      T-Shirt Size
-                    </h3>
-                    <div className="size-grid">
-                      {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                        <button
-                          key={size}
-                          className={`size-btn ${customSize === size ? 'active' : ''}`}
-                          onClick={() => setCustomSize(size)}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="customize-badge" style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    right: '-10px',
+                    background: '#e17055',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.85em',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 15px rgba(225, 112, 85, 0.4)',
+                    animation: 'pulse 2s infinite'
+                  }}>
+                    Custom Design
                   </div>
-
-                  {/* Quantity & Price */}
-                  <div className="option-group">
-                    <div className="quantity-price-row">
-                      <div className="quantity-selector">
-                        <span className="qty-label">Quantity:</span>
-                        <button 
-                          className="qty-btn"
-                          onClick={() => setCustomQuantity(Math.max(1, customQuantity - 1))}
-                        >
-                          −
-                        </button>
-                        <span className="qty-value">{customQuantity}</span>
-                        <button 
-                          className="qty-btn"
-                          onClick={() => setCustomQuantity(customQuantity + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <div className="price-display">
-                        <span className="price-label">Total:</span>
-                        <span className="price-value">
-                          ${((29.99 + (designElements.length * 2)) * customQuantity).toFixed(2)}
-                        </span>
-                        {designElements.length > 0 && (
-                          <span className="price-breakdown">
-                            (Base $29.99 + ${designElements.length * 2} for {designElements.length} design{designElements.length > 1 ? 's' : ''})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Add to Cart Button */}
-                  <button 
-                    className="customize-add-btn"
-                    onClick={handleCustomizeAddToCart}
-                  >
-                    <span className="btn-icon">🛒</span>
-                    Add Custom T-Shirt to Cart
-                  </button>
-
-                  <p className="customize-note">
-                    ✨ Free shipping on custom orders over $50 • 🔄 Easy returns within 30 days
-                  </p>
                 </div>
               </div>
             </div>
 
-            <div style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '5px', borderRadius: '8px', margin: '20px 0' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
-                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>👕</span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Made with Premium Fabric</p>
+            <div className="feature-boxes" style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '10px', borderRadius: '8px', margin: '20px 0', maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
+              <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+                <img 
+                  src="/images/febric.jpg" 
+                  alt="Premium Fabric" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
-                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}> 💸 </span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>7 Days Easy Return & Exchange</p>
+              <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+                <img 
+                  src="/images/return.jpg" 
+                  alt="Return & Exchange" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1, border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
-                <span style={{ fontSize: '40px', filter: 'grayscale(100%)' }}>🚚</span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#333' }}>Shipping within 24 hours</p>
+              <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+                <img 
+                  src="/images/shiping.jpg" 
+                  alt="Fast Shipping" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
             </div>
 
             {/* Hoodie Section */}
-            <div style={{ marginBottom: '60px' }}>
+            <div className="category-section-container" style={{ marginBottom: '60px' }}>
               <div
-                className="animated-dots-bg mt-10 mb-5 mx-2.5 cursor-pointer"
+                className="mt-10 mb-5 mx-2.5 cursor-pointer"
                 onClick={() => setSelectedCategory('hoodie')}
               >
-                {/* 7 Animated Floating Dots */}
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                <span className="floating-dot"></span>
-                
-                <h2 className="category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
+                <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
                   Hoodie
                 </h2>
               </div>
@@ -1080,7 +733,7 @@ function ProductPage() {
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                      gap: '0',
+                      gap: '20px',
                       maxWidth: '1200px',
                       margin: '0 auto',
                     }}
@@ -1096,7 +749,7 @@ function ProductPage() {
                           background: 'white',
                           cursor: 'pointer',
                           position: 'relative',
-                          margin: '-0.5px',
+                          borderRadius: '12px',
                         }}
                         onClick={() => navigate(`/product/${product._id}`)}
                       >
@@ -1121,8 +774,8 @@ function ProductPage() {
                     ))}
                   </section>
                   <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <button className='bg-gray-700'
-                      onClick={() => setSelectedCategory('t-shirt')}
+                    <button className='bg-gray-700 view-more-button'
+                      onClick={() => setSelectedCategory('hoodie')}
                       style={{
                         padding: '10px 30px',
                         color: '#fff',
@@ -1130,6 +783,15 @@ function ProductPage() {
                         borderRadius: '5px',
                         cursor: 'pointer',
                         fontSize: '1em',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#4a5568'
+                        e.target.style.transform = 'scale(1.05)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#374151'
+                        e.target.style.transform = 'scale(1)'
                       }}
                     >
                       View More
@@ -1160,7 +822,7 @@ function ProductPage() {
                   className="products-grid recently-viewed-grid"
                   style={{
                     display: 'grid',
-                    gap: '0',
+                    gap: '20px',
                     maxWidth: '1200px',
                     margin: '0 auto',
                   }}
@@ -1176,7 +838,7 @@ function ProductPage() {
                         background: 'white',
                         cursor: 'pointer',
                         position: 'relative',
-                        margin: '-0.5px',
+                        borderRadius: '12px',
                       }}
                       onClick={() => navigate(`/product/${product._id}`)}
                     >

@@ -14,6 +14,7 @@ import Wishlist from './pages/Wishlist'
 import NewArrival from './pages/NewArrival'
 import TrendingNow from './pages/TrendingNow'
 import Orders from './pages/Orders'
+import CustomizePage from './pages/CustomizePage'
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path='/newarrival' element={<NewArrival/>}/>
         <Route path='/trendingnow' element={<TrendingNow/>}/>
         <Route path='/orders' element={<Orders/>}/>
+        <Route path='/customize' element={<CustomizePage/>}/>
       </Routes>
     </Router>
   )
