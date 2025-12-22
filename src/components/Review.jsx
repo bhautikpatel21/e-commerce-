@@ -412,7 +412,7 @@ const Review = ({ productId }) => {
                     {review.images.map((imagePath, imgIndex) => {
                       const fullImageUrl = imagePath.startsWith('http') 
                         ? imagePath 
-                        : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:7410'}/${imagePath}`
+                        : `${import.meta.env.VITE_API_BASE_URL || 'https://prectise-2.onrender.com'}/${imagePath}`
                       return (
                         <img
                           key={imgIndex}

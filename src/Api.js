@@ -1,4 +1,4 @@
-const BASE_URL='http://localhost:7410/v1'
+const BASE_URL='https://prectise-2.onrender.com/v1'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
@@ -202,7 +202,7 @@ export const addReview = async (productId, rating, comment, images = [], token) 
     formData.append('images', image)
   })
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7410/v1'
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://prectise-2.onrender.com/v1'
   const headers = {
     'Authorization': `Bearer ${token}`,
   }
