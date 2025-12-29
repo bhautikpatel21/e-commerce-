@@ -207,14 +207,27 @@ function Login() {
 
   return (
     <div className="page-shell">
-      <marquee
-        className="announcement-bar fade-down"
-        direction="right"
-        behavior="scroll"
-        scrollamount="20"
-      >
-        <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-      </marquee>
+      <div className="announcement-bar fade-down" style={{ overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+        <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
+      </div>
 
       <Navbar />
 

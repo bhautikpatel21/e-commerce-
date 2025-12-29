@@ -1,4 +1,4 @@
-const BASE_URL='https://prectise-2.onrender.com/v1'
+const BASE_URL='https://thewolfstreet.onrender.com/v1'
 
 // Helper function to make API calls
 const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
@@ -202,7 +202,7 @@ export const addReview = async (productId, rating, comment, images = [], token) 
     formData.append('images', image)
   })
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://prectise-2.onrender.com/v1'
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://thewolfstreet.onrender.com/v1'
   const headers = {
     'Authorization': `Bearer ${token}`,
   }
@@ -255,9 +255,21 @@ export const sendMail = async (email) => {
 // ==================== ORDER APIs ====================
 
 // Create order API
-export const createOrder = async (shippingAddress, token) => {
+export const createOrder = async (shippingAddress, paymentMethod, token) => {
   return apiCall('/order/create', 'POST', {
     shippingAddress,
+    paymentMethod,
+  }, token)
+}
+
+// Buy Now - Create order directly for single product
+export const createBuyNowOrder = async (productId, quantity, size, shippingAddress, paymentMethod, token) => {
+  return apiCall('/order/buyNow', 'POST', {
+    productId,
+    quantity,
+    size,
+    shippingAddress,
+    paymentMethod
   }, token)
 }
 
@@ -311,6 +323,98 @@ export const orderCustomTShirt = async (customTShirt, token) => {
 
 // Create custom t-shirt order API
 export const createCustomTShirtOrder = async (orderData, token) => {
-  return apiCall('/order/customTShirt', 'POST', orderData, token)
+  const formData = new FormData();
+
+  // Append non-file data
+  formData.append('customTShirt', JSON.stringify(orderData.customTShirt));
+  formData.append('shippingAddress', orderData.shippingAddress);
+  formData.append('totalAmount', orderData.totalAmount.toString());
+  if (orderData.size) formData.append('size', orderData.size);
+  if (orderData.quantity) formData.append('quantity', orderData.quantity.toString());
+
+  // Append front images
+  if (orderData.frontImages && orderData.frontImages.length > 0) {
+    orderData.frontImages.forEach((file, index) => {
+      formData.append('frontImages', file);
+    });
+  }
+
+  // Append back images
+  if (orderData.backImages && orderData.backImages.length > 0) {
+    orderData.backImages.forEach((file, index) => {
+      formData.append('backImages', file);
+    });
+  }
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://thewolfstreet.onrender.com/v1';
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+  };
+
+  const response = await fetch(`${BASE_URL}/order/customTShirt`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.isSuccess) {
+    throw new Error(data.message || 'An error occurred');
+  }
+
+  return data;
+}
+
+// Get homepage data API
+export const getHomepage = async () => {
+  return apiCall('/homepage/get', 'GET')
+}
+
+// ==================== F-SHIP APIs ====================
+
+// Get couriers API
+export const getCouriers = async () => {
+  return apiCall('/fship/couriers', 'GET')
+}
+
+// Calculate rate API
+export const calculateRate = async (data) => {
+  const { pincode, weight = 0.5, amount = 0, paymentMode = 'P', expressType = 'surface' } = data
+  return apiCall('/fship/rate-calculator', 'POST', {
+    destinationPincode: pincode,
+    paymentMode: paymentMode,
+    amount: amount,
+    expressType: expressType,
+    weight: weight,
+    length: 10,
+    width: 10,
+    height: 10,
+    volumetricWeight: weight
+  })
+}
+
+// Check pincode serviceability API
+export const checkPincodeServiceability = async (pincode, token) => {
+  return apiCall('/fship/pincode-serviceability', 'POST', {
+    destinationPincode: pincode
+  }, token)
+}
+
+// Track order API
+export const trackOrder = async (orderId) => {
+  return apiCall(`/fship/track/${orderId}`, 'GET')
+}
+
+// Track by AWB number API
+export const trackByAwb = async (awbNumber) => {
+  return apiCall('/fship/track-awb', 'POST', {
+    awbNumber: awbNumber
+  })
+}
+
+// Get default warehouse (for source pincode)
+export const getDefaultWarehouse = async () => {
+  return apiCall('/fship/warehouses/default', 'GET')
 }
 

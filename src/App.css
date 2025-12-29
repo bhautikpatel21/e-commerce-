@@ -19,7 +19,6 @@ html, body {
   position: relative;
   height: 160px;
   width: 100%;
-  max-width: 1200px;
   margin: -60px auto 0;
   z-index: 2;
 }
@@ -44,7 +43,6 @@ html, body {
 
 .page-shell {
   width: 100%;
-  max-width: 1200px;
   min-height: 100vh;
   background: radial-gradient(circle at top, #f0f2f8 20%, #f8f6f4 65%);
   color: #1b1b1b;
@@ -57,14 +55,12 @@ html, body {
   background: #101828;
   color: #fff;
   padding: 0.6rem 3vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
   font-size: 0.9rem;
   width: 100%;
-  max-width: 1200px;
-  margin-top: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
 .announcement-bar button {
@@ -82,6 +78,29 @@ html, body {
   background: rgba(255, 255, 255, 0.12);
 }
 
+@keyframes scroll-continuous {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-content {
+  animation: scroll-continuous 10s linear infinite;
+  will-change: transform;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+/* After 768px (tablet & desktop) */
+@media (min-width: 768px) {
+  .marquee-content {
+    margin-top: 0;
+  }
+}
+
 .site-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -89,11 +108,21 @@ html, body {
   padding: 1.5rem 2rem;
   gap: 2rem;
   width: 100%;
-  max-width: 1200px;
   margin: 0 auto;
   position: relative;
   z-index: 60;
   background: #ffffff;
+}
+
+.site-header .logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .left-section {
@@ -120,16 +149,22 @@ html, body {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.2s ease;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .logo:hover {
-  transform: scale(1.05);
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
 .logo img {
   max-width: 150px;
+  max-height: 60px;
+  width: auto;
   height: auto;
   display: block;
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 .logo span {
@@ -331,7 +366,7 @@ nav a:hover::after,
 
 .user-dropdown-item {
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px 10px;
   border: none;
   background: none;
   cursor: pointer;
@@ -401,7 +436,6 @@ main {
   grid-template-columns: 1.1fr 0.9fr;
   gap: 1.2rem;
   align-items: flex-start;
-  padding: 1.25rem 0;
 }
 
 .product-hero-media {
@@ -1106,9 +1140,22 @@ main {
 }
 
 @media (max-width: 640px) {
+  .announcement-bar {
+    padding: 0.4rem 2vw;
+  }
+
   .announcement-bar,
   .site-header {
     padding: 1rem;
+  }
+
+  .responsive-banner-container {
+    margin-bottom: 10px;
+  }
+
+  .feature-boxes {
+    margin: 10px 0;
+    padding: 10px;
   }
 
   .product-panel,
@@ -1166,6 +1213,15 @@ main {
     flex: 1;
     display: flex;
     justify-content: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+
+  .logo:hover {
+    transform: translate(-50%, -50%) scale(1.05);
   }
 
   .right-section {
@@ -1229,10 +1285,20 @@ main {
     flex: 1;
     display: flex;
     justify-content: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+
+  .logo:hover {
+    transform: translate(-50%, -50%) scale(1.05);
   }
 
   .logo img {
-    max-height: 48px;
+    max-height: 40px;
+    max-width: 100px;
   }
 
   .right-section {
@@ -1371,7 +1437,8 @@ main {
   }
 
   .logo img {
-    max-height: 40px;
+    max-height: 35px;
+    max-width: 90px;
   }
 
   .right-section {
@@ -1547,7 +1614,7 @@ main {
   /* Product image styling for mobile */
   .products-grid .product-card img {
     width: 100% !important;
-    height: auto !important;
+    /* height: auto !important; */
     aspect-ratio: 1 / 1 !important;
     object-fit: cover !important;
     border-radius: 12px 12px 0 0 !important;
@@ -1577,7 +1644,7 @@ main {
   /* Remove border radius from banner images on mobile and increase height */
   img[alt*="Banner"] {
     border-radius: 0 !important;
-    height: 300px !important;
+    height: 500px !important;
   }
 }
 
@@ -1628,24 +1695,49 @@ main {
 
 @media (max-width: 768px) {
   .product-image-container {
-    height: 200px;
+    height: 180px !important;
   }
   
   .product-image-scroll-container {
-    height: 200px;
+    height: 180px !important;
   }
   
-  /* Ensure product cards have border radius on mobile */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 0 8px !important;
+  }
+  
   .product-card {
+    max-height: 280px !important;
     border-radius: 12px !important;
   }
 }
 /* Cart Responsive Styles */
 
-/* Desktop styles */
+/* Base cart layout */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Desktop styles - Cart items LEFT, Summary RIGHT */
 @media (min-width: 769px) {
   .cart-layout {
-    grid-template-columns: 1fr 380px !important;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+  }
+
+  .cart-items-container {
+    order: 1;
+  }
+
+  .cart-total-section {
+    order: 2;
+    position: sticky;
+    top: 100px;
   }
 
   .cart-item-img {
@@ -1661,8 +1753,8 @@ main {
 /* Large desktop */
 @media (min-width: 1024px) {
   .cart-layout {
-    grid-template-columns: 1fr 400px !important;
-    gap: 40px !important;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
   }
 
   .cart-item-img {
@@ -1671,18 +1763,25 @@ main {
   }
 }
 
+/* Mobile styles */
 @media (max-width: 768px) {
   .cart-main {
-    padding: 16px !important;
+    padding: 16px 0 !important;
   }
 
   .cart-layout {
-    grid-template-columns: 1fr !important;
-    gap: 20px !important;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .cart-items-container {
+    order: 1;
     padding: 12px !important;
+  }
+
+  .cart-total-section {
+    order: 2;
+    position: static !important;
   }
 
   .cart-item-img {
@@ -2927,9 +3026,6 @@ main {
 
 /* Desktop-specific styles - only applies to screens 768px and above */
 @media (min-width: 768px) {
-  .page-shell {
-    padding: 0 2rem;
-  }
   
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
@@ -2952,25 +3048,23 @@ main {
   }
   
   .category-banner {
-    height: 350px !important;
     margin-bottom: 40px !important;
   }
   
   .promotional-banner {
-    max-width: 1000px !important;
     padding: 30px !important;
     margin: 40px auto !important;
   }
   
   .feature-boxes {
-    max-width: 1000px !important;
+    max-width: 700px !important;
     margin: 40px auto !important;
     padding: 30px !important;
     gap: 30px !important;
   }
   
   .feature-boxes > div {
-    height: 250px !important;
+    height: 170px !important;
     transition: transform 0.3s ease;
   }
   
@@ -3003,10 +3097,184 @@ main {
   }
   
   .category-banner {
-    height: 400px !important;
+    height: 600px !important;
   }
   
   .slider-container {
     height: 700px !important;
+  }
+}
+
+/* Review Slider Utilities */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Responsive Banner */
+.responsive-banner-container {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.mobile-banner,
+.desktop-banner {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-banner {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.desktop-banner {
+  display: none;
+}
+
+/* Mobile styles - show phone banner only on screens 767px and below */
+@media (max-width: 767px) {
+  .responsive-banner-container {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    margin-bottom: 20px;
+  }
+  
+  .mobile-banner {
+    display: block !important;
+    width: 100vw;
+    max-width: 100vw;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .desktop-banner {
+    display: none !important;
+  }
+}
+
+/* Narrow mobile fix for banner distortion (e.g., 425px) */
+@media (max-width: 480px) {
+  .responsive-banner-container {
+    overflow: hidden !important;
+  }
+  
+  .mobile-banner {
+    height: 600px !important;
+    object-fit: cover !important;
+    width: 100vw !important;
+  }
+}
+
+/* Desktop/Laptop styles - show laptop banner on screens 768px and above */
+@media (min-width: 700px) {
+  .responsive-banner-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .mobile-banner {
+    display: none !important;
+  }
+
+  .desktop-banner {
+    display: block !important;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Promo Banner Styles */
+.promo-banner-container {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.promo-banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Mobile styles for promo banner */
+@media (max-width: 768px) {
+  .promo-banner-container {
+    margin: 20px auto !important;
+    padding: 0 10px !important;
+  }
+
+  .promo-banner-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .promo-banner-container {
+    margin: 15px auto !important;
+    padding: 0 8px !important;
+  }
+
+  .promo-banner-image {
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+/* Hide customize section preview on mobile */
+@media (max-width: 768px) {
+  .customize-preview-container {
+    display: none !important;
+  }
+
+  .customize-section-inner {
+    grid-template-columns: 1fr !important;
+    padding: 30px 20px !important;
+    gap: 20px !important;
+  }
+
+  .customize-title {
+    font-size: 1.6em !important;
+  }
+
+  .customize-description {
+    font-size: 1em !important;
   }
 }

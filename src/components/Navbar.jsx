@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaWhatsapp } from 'react-icons/fa';
 import { searchProducts, getUserProfile, getWishlist, getCart } from '../Api';
 
 const navItems = [
   'Shop All',
-  'New Arrivals',
-  'Trending Now',
   'Home Page',
 ]
 
@@ -13,9 +12,9 @@ const navItems = [
 // "category" values from the products API
 const shopCategories = [
   { label: 'All', value: 'all' },
-  { label: 'T-Shirt', value: 't-shirt' },
-  { label: 'Shirt', value: 'shirt' },
-  { label: 'Hoodie', value: 'hoodie' },
+  { label: 'Oversized T-shirts', value: 'oversized-tshirts' },
+  { label: 'Printed T-shirts', value: 'printed-tshirts' },
+  { label: 'Embrodery T-shirt', value: 'embrodery-tshirt' },
 ]
 
 const Navbar = ({ onSelectCategory = () => {} }) => {
@@ -270,7 +269,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                 <path d="m21 21-4.35-4.35"></path>
               </svg>
             </button>
-            
+
             {/* Mobile search backdrop */}
             {isSearchOpen && (
               <div
@@ -283,7 +282,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                 onClick={() => setIsSearchOpen(false)}
               />
             )}
-            
+
             {/* Search dropdown */}
             {isSearchOpen && (
               <div
@@ -316,7 +315,7 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                     outline: 'none',
                   }}
                 />
-                
+
                 {/* Search Results */}
                 {searchQuery.trim() && (
                   <div
@@ -386,6 +385,20 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
             )}
           </div>
         )}
+
+        {/* WhatsApp icon on left side for mobile, after search */}
+        {isMobile && (
+          <button
+            type="button"
+            aria-label="WhatsApp"
+            className="header-icon-button"
+            onClick={() => window.open(import.meta.env.VITE_WHATSAPP, '_blank')}
+          >
+            <FaWhatsapp className="header-icon-symbol" size={20} />
+          </button>
+        )}
+
+
         {!isMobile && (
           <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
             {navItems.map((item) => {
@@ -436,22 +449,6 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                 )
               }
 
-              if (item === 'New Arrivals') {
-                return (
-                  <Link to="/newarrival" key={item} className="nav-item">
-                    {item}
-                  </Link>
-                )
-              }
-
-              if (item === 'Trending Now') {
-                return (
-                  <Link to="/trendingnow" key={item} className="nav-item">
-                    {item}
-                  </Link>
-                )
-              }
-
               return (
                 <a href="#" key={item} className="nav-item">
                   {item}
@@ -461,15 +458,20 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
           </nav>
         )}
       </div>
-      <div className="logo" onClick={() => navigate('/', { state: { resetCategory: true } })}>
+      <div className="logo" onClick={() => navigate('/', { state: { resetCategory: true } })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img 
           src="/logo.jpg" 
-          alt="The Bear House Logo" 
+          alt="The Wolf Street Logo" 
+          onError={(e) => {
+            console.error('Logo image failed to load:', e.target.src)
+            e.target.style.display = 'none'
+          }}
           style={{ 
-            width: isMobile ? '120px' : '180px', 
-            height: isMobile ? '50px' : 'auto',
+            width: isMobile ? '100px' : '150px', 
+            height: isMobile ? '40px' : 'auto',
             objectFit: 'contain',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'block'
           }} 
         />
       </div>
@@ -626,6 +628,18 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
             )}
           </button>
 
+          {/* WhatsApp icon for desktop */}
+          {!isMobile && (
+            <button
+              type="button"
+              aria-label="WhatsApp"
+              className="header-icon-button"
+              onClick={() => window.open(import.meta.env.VITE_WHATSAPP, '_blank')}
+            >
+              <FaWhatsapp className="header-icon-symbol" size={20} />
+            </button>
+          )}
+
           {/* User/Login icon */}
           {isLoggedIn ? (
             <div ref={userRef} className="header-icon-wrapper">
@@ -773,38 +787,6 @@ const Navbar = ({ onSelectCategory = () => {} }) => {
                     onClick={() => {
                       setIsMenuOpen(false)
                       navigate('/', { state: { resetCategory: true } })
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                )
-              }
-
-              if (item.label === 'New Arrivals') {
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className="mobile-nav-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      navigate('/newarrival')
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                )
-              }
-
-              if (item.label === 'Trending Now') {
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className="mobile-nav-item"
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      navigate('/trendingnow')
                     }}
                   >
                     {item.label}

@@ -136,7 +136,7 @@ const ProductDetail = ({ product, onClose }) => {
               <span>PayPal</span>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-              <p>Free shipping on orders over ₹500. Returns within 7 days.</p>
+              <p>Returns within 7 days.</p>
               <p className="mt-2">Category: {product.category}</p>
             </div>
           </div>

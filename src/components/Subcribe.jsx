@@ -26,7 +26,7 @@ const Subscribe = () => {
   };
 
   return (
-    <div className="relative w-full mt-6 px-12">
+    <div className="relative w-full h-[500px] mt-6 px-12">
       {toast.show && (
         <Toast
           message={toast.message}
@@ -34,9 +34,9 @@ const Subscribe = () => {
           onClose={() => setToast({ show: false, message: '', type: 'success' })}
         />
       )}
-      <div className="absolute inset-0" style={{ backgroundImage: 'url(/images/subcribe.webp)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: 0.5 }}></div>
-      <div className="relative z-10 flex flex-col items-center w-full py-12 text-center gap-6">
-        <h2 className="text-2xl font-bold uppercase tracking-wide">
+      <div className="absolute inset-0 h-[500px] flex justify-center items-center" style={{ backgroundImage: 'url(/images/subcribe.webp)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: 0.5 }}></div>
+      <div className="relative z-10 flex flex-col items-center justify-center w-full py-12 text-center gap-6">
+        <h2 className="text-2xl font-bold uppercase tracking-wid mt-18">
           SIGN UP AND SAVE
         </h2>
         <p className="text-gray-600">Subscribe to get special offers</p>

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { addToCart, getWishlist, addToWishlist, removeFromWishlist } from '../Api'
+import { getWishlist, getHomepage } from '../Api'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import Review from '../components/Review'
 import Footer from '../components/Footer'
 import Category from '../components/Category'
 import ScrollableProductImage from '../components/ScrollableProductImage'
@@ -29,56 +28,66 @@ function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [recentlyViewed, setRecentlyViewed] = useState([])
-  const [shirtProducts, setShirtProducts] = useState([])
-  const [tshirtProducts, setTshirtProducts] = useState([])
-  const [hoodieProducts, setHoodieProducts] = useState([])
+  const [oversizedProducts, setOversizedProducts] = useState([])
+  const [printedProducts, setPrintedProducts] = useState([])
+  const [embroderyProducts, setEmbroderyProducts] = useState([])
   const [categoryLoading, setCategoryLoading] = useState(true)
   const [wishlistedItems, setWishlistedItems] = useState([])
   const [selectedSize, setSelectedSize] = useState('')
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [celebrate, setCelebrate] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const sliderImages = ['/images/poster1.jpg', '/images/poster2.jpg', '/images/poster3.jpg', '/images/poster4.jpg']
-
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % sliderImages.length)
-  }
+  const [homepageImages, setHomepageImages] = useState({
+    heroMobileImage: '',
+    heroDesktopImage: '',
+    collectionMobileImage: '',
+    collectionDesktopImage: '',
+    saleImage: '',
+  })
 
   // Check if today is Friday on component mount
   useEffect(() => {
     setIsFridayDiscount(isFriday())
   }, [])
 
-  // Auto-slide every 2 seconds
+  // Fetch homepage images
   useEffect(() => {
-    const interval = setInterval(() => {
-      nextImage()
-    }, 2000)
-    return () => clearInterval(interval)
+    const fetchHomepageImages = async () => {
+      try {
+        const response = await getHomepage()
+        if (response.isSuccess && response.data) {
+          setHomepageImages({
+            heroMobileImage: response.data.heroMobileImage || '',
+            heroDesktopImage: response.data.heroDesktopImage || '',
+            collectionMobileImage: response.data.collectionMobileImage || '',
+            collectionDesktopImage: response.data.collectionDesktopImage || '',
+            saleImage: response.data.saleImage || '',
+          })
+        }
+      } catch (error) {
+        console.log('Using default homepage images')
+      }
+    }
+    fetchHomepageImages()
   }, [])
 
-  // Check for category in navigation state when component mounts or location changes
   useEffect(() => {
-    // If navigating with resetCategory flag or no category, show original page
     if (location.state?.resetCategory === true) {
       setSelectedCategory(null)
       window.history.replaceState({}, document.title)
     } else if (location.state?.category) {
       setSelectedCategory(location.state.category)
-      // Clear the state to avoid re-triggering on re-renders
       window.history.replaceState({}, document.title)
     }
   }, [location.state])
 
-  // Helper function to render product price with discount
   const renderProductPrice = (product) => {
     if (!product.price) return <p style={{ fontSize: '1.1em', fontWeight: 'bold', color: '#333' }}>Price not available</p>
 
     if (isFridayDiscount) {
       const discountedPriceUSD = calculateDiscountedPrice(product.price)
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-start' }}>
           <span
             style={{
               fontSize: '1em',
@@ -107,6 +116,7 @@ function ProductPage() {
             fontSize: '1.1em',
             fontWeight: 'bold',
             color: '#333',
+            textAlign: 'left',
           }}
         >
           {formatPrice(product.price)}
@@ -115,7 +125,6 @@ function ProductPage() {
     }
   }
 
-  // Load wishlist from API on mount
   useEffect(() => {
     const fetchWishlist = async () => {
       const token = localStorage.getItem('token')
@@ -154,13 +163,11 @@ function ProductPage() {
     fetchProducts()
   }, [])
 
-  // Load recently viewed products from localStorage
   useEffect(() => {
     if (productsData.length > 0) {
       const stored = localStorage.getItem('recentlyViewed')
       const recentlyViewedIds = stored ? JSON.parse(stored) : []
 
-      // Get recently viewed products from productsData
       const recentlyViewedProducts = recentlyViewedIds
         .map(id => productsData.find(p => p._id === id))
         .filter(p => p !== undefined)
@@ -175,22 +182,19 @@ function ProductPage() {
       try {
         setCategoryLoading(true)
 
-        // Fetch shirt products
-        const shirtResponse = await getProductsByCategoryForHome('shirt', 1, 8)
-        if (shirtResponse.isSuccess && shirtResponse.data) {
-          setShirtProducts(Array.isArray(shirtResponse.data) ? shirtResponse.data : shirtResponse.data.products || [])
+        const oversizedResponse = await getProductsByCategoryForHome('oversized-tshirts', 1, 8)
+        if (oversizedResponse.isSuccess && oversizedResponse.data) {
+          setOversizedProducts(Array.isArray(oversizedResponse.data) ? oversizedResponse.data : oversizedResponse.data.products || [])
         }
 
-        // Fetch t-shirt products
-        const tshirtResponse = await getProductsByCategoryForHome('t-shirt', 1, 8)
-        if (tshirtResponse.isSuccess && tshirtResponse.data) {
-          setTshirtProducts(Array.isArray(tshirtResponse.data) ? tshirtResponse.data : tshirtResponse.data.products || [])
+        const printedResponse = await getProductsByCategoryForHome('printed-tshirts', 1, 8)
+        if (printedResponse.isSuccess && printedResponse.data) {
+          setPrintedProducts(Array.isArray(printedResponse.data) ? printedResponse.data : printedResponse.data.products || [])
         }
 
-        // Fetch hoodie products
-        const hoodieResponse = await getProductsByCategoryForHome('hoodie', 1, 6)
-        if (hoodieResponse.isSuccess && hoodieResponse.data) {
-          setHoodieProducts(Array.isArray(hoodieResponse.data) ? hoodieResponse.data : hoodieResponse.data.products || [])
+        const embroderyResponse = await getProductsByCategoryForHome('embrodery-tshirt', 1, 6)
+        if (embroderyResponse.isSuccess && embroderyResponse.data) {
+          setEmbroderyProducts(Array.isArray(embroderyResponse.data) ? embroderyResponse.data : embroderyResponse.data.products || [])
         }
       } catch (err) {
         console.error('Error fetching category products:', err)
@@ -240,38 +244,62 @@ function ProductPage() {
           onClose={() => setToast({ show: false, message: '', type: 'success' })}
         />
       )}
-      <marquee
-        className="announcement-bar fade-down"
-        direction="right"
-        behavior="scroll"
-        scrollamount="20"
-      >
-        <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-      </marquee>
+      <div className="announcement-bar fade-down" style={{ overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+        <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
+      </div>
 
       <Navbar onSelectCategory={setSelectedCategory} />
 
-      {/* Image Slider */}
-      <div className="slider-container" style={{ position: 'relative', width: '100%', height: '500px', overflow: 'hidden', marginBottom: '20px' }}>
+      <div className="responsive-banner-container">
         <img
-          src={sliderImages[currentImageIndex]}
-          alt={`Poster ${currentImageIndex + 1}`}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          src={homepageImages.heroMobileImage || "/images/phoneBanner.jpg"}
+          alt="Banner"
+          className="mobile-banner"
+        />
+        <img
+          src={homepageImages.heroDesktopImage || "/images/leptopBanner.jpg"}
+          alt="Banner"
+          className="desktop-banner"
         />
       </div>
 
-      <div className="feature-boxes" style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '20px', borderRadius: '8px', margin: '20px 0', maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
-        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px', minHeight: '150px' }}>
-          <img 
-            src="/images/embroidery.jpg" 
-            alt="Premium Fabric" 
+      <div className="feature-boxes" style={{ padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '20px', borderRadius: '8px', margin: '20px 0', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+          <img
+            src="/images/febric.jpg"
+            alt="Premium Fabric"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         </div>
-        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px', minHeight: '150px' }}>
-          <img 
-            src="/images/shiping.jpg" 
-            alt="Fast Shipping" 
+        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+          <img
+            src="/images/embroidery.jpg"
+            alt="Premium Fabric"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+        <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
+          <img
+            src="/images/shiping.jpg"
+            alt="Fast Shipping"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         </div>
@@ -287,36 +315,19 @@ function ProductPage() {
           <>
             {/* Featured product hero section (top of page) */}
 
-            {/* Shirt Section */}
+            {/* Oversized T-shirts Section */}
             <div className="category-section-container" style={{ marginBottom: '20px' }}>
               <div
                 className="mt-10 mb-5 mx-2.5 cursor-pointer"
-                onClick={() => setSelectedCategory('shirt')}
+                onClick={() => setSelectedCategory('oversized-tshirts')}
               >
                 <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
-                  Our Collections
+                  Our collection
                 </h2>
               </div>
-              <img
-                src="/images/shirt.webp"
-                alt="Shirt Banner"
-                className="category-banner"
-                style={{
-                  width: '100%',
-                  maxWidth: '1200px',
-                  height: '250px',
-                  objectFit: 'cover',
-                  margin: '0 auto 30px',
-                  display: 'block',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => setSelectedCategory('shirt')}
-                loading="lazy"
-              />
               {categoryLoading ? (
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <p>Loading shirt products...</p>
+                  <p>Loading oversized t-shirts products...</p>
                 </div>
               ) : (
                 <>
@@ -330,44 +341,64 @@ function ProductPage() {
                       margin: '0 auto',
                     }}
                   >
-                    {shirtProducts.map((product, index) => (
+                    {oversizedProducts.map((product, index) => (
                       <div
-                        key={product._id || product.title + index}
-                        className="product-card"
+                      key={product._id || product.title + index}
+                      className="product-card"
+                      style={{
+                        textAlign: 'left',
+                        border: '1px solid #e0e0e0',
+                        overflow: 'hidden',
+                        background: 'white',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        borderRadius: '12px',
+                      }}
+                      onClick={() => navigate(`/product/${product._id}`)}
+                    >
+                      <ScrollableProductImage
+                        product={product}
+                        productId={`oversized-${index}`}
+                        showDiscountBadge={isFridayDiscount}
+                      />
+                    
+                      <div
                         style={{
-                          textAlign: 'center',
-                          border: '1px solid #e0e0e0',
-                          overflow: 'hidden',
-                          background: 'white',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',  
+                          borderTop: '1px solid #e0e0e0',
+                          paddingTop: '10px',
+                          paddingLeft: '12px',        // optional (for spacing)
+                          paddingRight: '12px',
                         }}
-                        onClick={() => navigate(`/product/${product._id}`)}
                       >
-                        <ScrollableProductImage
-                          product={product}
-                          productId={`shirt-${index}`}
-                          showDiscountBadge={isFridayDiscount}
-                        />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
-                          {(() => {
-                            const { type, name } = parseProductTitle(product.title);
-                            return (
-                              <div className="product-title" style={{ fontSize: '1em', textAlign: 'center' }}>
-                                {type ? <span className="title-type">{type}</span> : null}
-                                <span className="title-name">{name}</span>
-                              </div>
-                            );
-                          })()}
-                          {renderProductPrice(product)}
-                        </div>
+                        {(() => {
+                          const { type, name } = parseProductTitle(product.title);
+                          return (
+                            <div
+                              className="product-title"
+                              style={{
+                                fontSize: '1em',
+                                textAlign: 'left', 
+                                width: '100%',
+                              }}
+                            >
+                              {type ? <span className="title-type">{type} </span> : null}
+                              <span className="title-name">{name}</span>
+                            </div>
+                          );
+                        })()}
+                    
+                        {renderProductPrice(product)}
                       </div>
+                    </div>
+                    
                     ))}
                   </section>
                   <div style={{ textAlign: 'center', marginTop: '20px' }}>
                     <button className='bg-gray-700'
-                      onClick={() => setSelectedCategory('t-shirt')}
+                      onClick={() => setSelectedCategory('oversized-tshirts')}
                       style={{
                         padding: '10px 30px',
                         color: '#fff',
@@ -388,24 +419,38 @@ function ProductPage() {
             <div className="promotional-banner" style={{ textAlign: 'center', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', margin: '0 auto 20px', maxWidth: '1200px' }}>
               <h3 style={{ fontSize: '1.2em', margin: '0 0 15px 0' }}>Make Way for New Drip</h3>
               <h2 style={{ fontSize: '1.5em', fontWeight: 'bold', margin: '0 0 10px 0', textTransform: 'uppercase' }}>Explore the Season's New Styles</h2>
-              <p style={{ fontSize: '1.2em', fontWeight: 'bold', margin: '0 0 10px 0' }}>Extra 10% on Orders Above $2599</p>
+              <p style={{ fontSize: '1.2em', fontWeight: 'bold', margin: '0 0 10px 0' }}>Extra 10% on Orders Above ₹2099</p>
               <p style={{ fontSize: '0.9em', color: '#666', margin: '0' }}>Discount auto-applied at checkout | Exclusions apply</p>
             </div>
 
-            {/* T-shirt Section */}
+            {/* Printed T-shirts Section */}
             <div className="category-section-container" style={{ marginBottom: '20px' }}>
               <div
                 className="mt-10 mb-5 mx-2.5 cursor-pointer"
-                onClick={() => setSelectedCategory('t-shirt')}
+                onClick={() => setSelectedCategory('printed-tshirts')}
               >
-                <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
-                  T-Shirt
-                </h2>
+
               </div>
               <img
-                src="/images/t-shirt.webp"
-                alt="T-shirt Banner"
-                className="category-banner"
+                src={homepageImages.collectionDesktopImage || "/images/banner2.jpg"}
+                alt="Printed T-shirts Banner"
+                className="category-banner desktop-banner"
+                style={{
+                  width: '90%',
+                  height: '350px',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                  objectFit: 'cover',
+                  display: 'block',
+                  borderRadius: '8px',
+                }}
+                onClick={() => setSelectedCategory('printed-tshirts')}
+                loading="lazy"
+              />
+              <img
+                src={homepageImages.collectionMobileImage || "/images/banner2.jpg"}
+                alt="Printed T-shirts Banner"
+                className="category-banner mobile-banner"
                 style={{
                   width: '100%',
                   maxWidth: '1200px',
@@ -416,12 +461,15 @@ function ProductPage() {
                   borderRadius: '8px',
                   cursor: 'pointer',
                 }}
-                onClick={() => setSelectedCategory('t-shirt')}
+                onClick={() => setSelectedCategory('printed-tshirts')}
                 loading="lazy"
               />
+              <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest mb-6">
+                our collection
+              </h2>
               {categoryLoading ? (
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <p>Loading t-shirt products...</p>
+                  <p>Loading products...</p>
                 </div>
               ) : (
                 <>
@@ -435,44 +483,64 @@ function ProductPage() {
                       margin: '0 auto',
                     }}
                   >
-                    {tshirtProducts.map((product, index) => (
+                    {[...printedProducts, ...embroderyProducts].map((product, index) => (
                       <div
-                        key={product._id || product.title + index}
-                        className="product-card"
+                      key={product._id || product.title + index}
+                      className="product-card"
+                      style={{
+                        textAlign: 'left',
+                        border: '1px solid #e0e0e0',
+                        overflow: 'hidden',
+                        background: 'white',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        borderRadius: '12px',
+                      }}
+                      onClick={() => navigate(`/product/${product._id}`)}
+                    >
+                      <ScrollableProductImage
+                        product={product}
+                        productId={`collection-${index}`}
+                        showDiscountBadge={isFridayDiscount}
+                      />
+                    
+                      <div
                         style={{
-                          textAlign: 'center',
-                          border: '1px solid #e0e0e0',
-                          overflow: 'hidden',
-                          background: 'white',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          borderTop: '1px solid #e0e0e0',
+                          paddingTop: '10px',
+                          paddingLeft: '12px',      // optional (spacing)
+                          paddingRight: '12px',
                         }}
-                        onClick={() => navigate(`/product/${product._id}`)}
                       >
-                        <ScrollableProductImage
-                          product={product}
-                          productId={`tshirt-${index}`}
-                          showDiscountBadge={isFridayDiscount}
-                        />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
-                          {(() => {
-                            const { type, name } = parseProductTitle(product.title);
-                            return (
-                              <div className="product-title" style={{fontSize: '1em', textAlign: 'center' }}>
-                                {type ? <span className="title-type">{type}</span> : null}
-                                <span className="title-name">{name}</span>
-                              </div>
-                            );
-                          })()}
-                          {renderProductPrice(product)}
-                        </div>
+                        {(() => {
+                          const { type, name } = parseProductTitle(product.title);
+                          return (
+                            <div
+                              className="product-title"
+                              style={{
+                                fontSize: '1em',
+                                textAlign: 'left',
+                                width: '100%',
+                              }}
+                            >
+                              {type ? <span className="title-type">{type} </span> : null}
+                              <span className="title-name">{name}</span>
+                            </div>
+                          );
+                        })()}
+                    
+                        {renderProductPrice(product)}
                       </div>
+                    </div>
+                    
                     ))}
                   </section>
                   <div style={{ textAlign: 'center', marginTop: '20px' }}>
                     <button className='bg-gray-700 view-more-button'
-                      onClick={() => setSelectedCategory('t-shirt')}
+                      onClick={() => setSelectedCategory('all')}
                       style={{
                         padding: '10px 30px',
                         color: '#fff',
@@ -498,12 +566,22 @@ function ProductPage() {
               )}
             </div>
 
+            {/* Banner before Customize Section */}
+            <div className="promo-banner-container" style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 1rem' }}>
+              <img
+                src={homepageImages.saleImage || "/images/banner4.jpg"}
+                alt="Black Friday Sale Banner"
+                className="promo-banner-image"
+                loading="lazy"
+              />
+            </div>
+
             {/* Customize Section - Enhanced Design */}
-            <div 
+            <div
               className="customize-section"
-              style={{ 
-                maxWidth: '1200px', 
-                margin: '60px auto', 
+              style={{
+                maxWidth: '1200px',
+                margin: '60px auto',
                 padding: '0 1rem',
                 background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
                 borderRadius: '16px',
@@ -512,18 +590,18 @@ function ProductPage() {
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
               }}
             >
-              <div className="customize-section-inner" style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr', 
-                gap: '40px', 
+              <div className="customize-section-inner" style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '40px',
                 padding: '50px 40px',
                 alignItems: 'center'
               }}>
                 {/* Left Side - Content */}
                 <div>
-                  <div className="customize-badge-new" style={{ 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
+                  <div className="customize-badge-new" style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
                     gap: '8px',
                     background: '#fff4e6',
                     color: '#d35400',
@@ -537,27 +615,27 @@ function ProductPage() {
                     <span>🎨</span>
                     <span>NEW FEATURE</span>
                   </div>
-                  <h2 className="customize-title" style={{ 
-                    fontSize: '2.2em', 
-                    fontWeight: 'bold', 
-                    color: '#333', 
+                  <h2 className="customize-title" style={{
+                    fontSize: '2.2em',
+                    fontWeight: 'bold',
+                    color: '#333',
                     marginBottom: '15px',
                     lineHeight: '1.2'
                   }}>
                     Design Your Own T-Shirt
                   </h2>
-                  <p className="customize-description" style={{ 
-                    fontSize: '1.1em', 
-                    color: '#666', 
+                  <p className="customize-description" style={{
+                    fontSize: '1.1em',
+                    color: '#666',
                     marginBottom: '30px',
                     lineHeight: '1.6'
                   }}>
                     Create a unique piece that's 100% you. Add custom text, logos, upload your own designs, and choose from multiple colors and sizes.
                   </p>
-                  <div className="customize-features" style={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: '15px', 
+                  <div className="customize-features" style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '15px',
                     marginBottom: '30px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#555' }}>
@@ -609,9 +687,9 @@ function ProductPage() {
                 </div>
 
                 {/* Right Side - Visual Preview */}
-                <div className="customize-preview-container" style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
+                <div className="customize-preview-container" style={{
+                  display: 'flex',
+                  justifyContent: 'center',
                   alignItems: 'center',
                   position: 'relative'
                 }}>
@@ -627,14 +705,14 @@ function ProductPage() {
                     position: 'relative',
                     transition: 'all 0.3s ease'
                   }}>
-                    <div style={{ 
-                      width: '180px', 
+                    <div style={{
+                      width: '180px',
                       height: '200px',
                       position: 'relative'
                     }}>
                       <svg viewBox="0 0 200 220" style={{ width: '100%', height: '100%' }}>
-                        <path 
-                          d="M50 0 L0 50 L20 60 L20 220 L180 220 L180 60 L200 50 L150 0 L130 20 Q100 35 70 20 Z" 
+                        <path
+                          d="M50 0 L0 50 L20 60 L20 220 L180 220 L180 60 L200 50 L150 0 L130 20 Q100 35 70 20 Z"
                           fill="#ffffff"
                           stroke="#d4c4b5"
                           strokeWidth="2"
@@ -673,139 +751,33 @@ function ProductPage() {
 
             <div className="feature-boxes" style={{ backgroundColor: '#f5f5f5', padding: '20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '10px', borderRadius: '8px', margin: '20px 0', maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
               <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
-                <img 
-                  src="/images/febric.jpg" 
-                  alt="Premium Fabric" 
+                <img
+                  src="/images/febric.jpg"
+                  alt="Premium Fabric"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
               <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
-                <img 
-                  src="/images/return.jpg" 
-                  alt="Return & Exchange" 
+                <img
+                  src="/images/return.jpg"
+                  alt="Return & Exchange"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
               <div style={{ flex: 1, borderRadius: '4px', overflow: 'hidden', height: '200px' }}>
-                <img 
-                  src="/images/shiping.jpg" 
-                  alt="Fast Shipping" 
+                <img
+                  src="/images/shiping.jpg"
+                  alt="Fast Shipping"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
-            </div>
-
-            {/* Hoodie Section */}
-            <div className="category-section-container" style={{ marginBottom: '60px' }}>
-              <div
-                className="mt-10 mb-5 mx-2.5 cursor-pointer"
-                onClick={() => setSelectedCategory('hoodie')}
-              >
-                <h2 className="category-title category-title-text text-center text-black text-2xl font-bold uppercase tracking-widest">
-                  Hoodie
-                </h2>
-              </div>
-              <img
-                src="/images/hoodie.webp"
-                alt="Hoodie Banner"
-                className="category-banner"
-                style={{
-                  width: '100%',
-                  maxWidth: '1200px',
-                  height: '250px',
-                  objectFit: 'cover',
-                  margin: '0 auto 30px',
-                  display: 'block',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => setSelectedCategory('hoodie')}
-                loading="lazy"
-              />
-              {categoryLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <p>Loading hoodie products...</p>
-                </div>
-              ) : (
-                <>
-                  <section
-                    className="products-grid"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                      gap: '20px',
-                      maxWidth: '1200px',
-                      margin: '0 auto',
-                    }}
-                  >
-                    {hoodieProducts.map((product, index) => (
-                      <div
-                        key={product._id || product.title + index}
-                        className="product-card"
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e0e0e0',
-                          overflow: 'hidden',
-                          background: 'white',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          borderRadius: '12px',
-                        }}
-                        onClick={() => navigate(`/product/${product._id}`)}
-                      >
-                        <ScrollableProductImage
-                          product={product}
-                          productId={`hoodie-${index}`}
-                          showDiscountBadge={isFridayDiscount}
-                        />
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
-                          {(() => {
-                            const { type, name } = parseProductTitle(product.title);
-                            return (
-                              <div className="product-title" style={{ fontSize: '1em', textAlign: 'center' }}>
-                                {type ? <span className="title-type">{type}</span> : null}
-                                <span className="title-name">{name}</span>
-                              </div>
-                            );
-                          })()}
-                          {renderProductPrice(product)}
-                        </div>
-                      </div>
-                    ))}
-                  </section>
-                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <button className='bg-gray-700 view-more-button'
-                      onClick={() => setSelectedCategory('hoodie')}
-                      style={{
-                        padding: '10px 30px',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '1em',
-                        transition: 'all 0.3s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#4a5568'
-                        e.target.style.transform = 'scale(1.05)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#374151'
-                        e.target.style.transform = 'scale(1)'
-                      }}
-                    >
-                      View More
-                    </button>
-                  </div>
-                </>
-              )}
             </div>
 
             {recentlyViewed.length > 0 && (
               <>
                 <h2
                   style={{
-                    textAlign: 'start',
+                    textAlign: 'center',
                     color: 'black',
                     fontSize: '1.5em',
                     fontWeight: 'bold',
@@ -825,6 +797,8 @@ function ProductPage() {
                     gap: '20px',
                     maxWidth: '1200px',
                     margin: '0 auto',
+                    paddingLeft: '30px',
+                    paddingRight: '30px',
                   }}
                 >
                   {recentlyViewed.map((product, index) => (
@@ -832,7 +806,7 @@ function ProductPage() {
                       key={product._id || product.title + index}
                       className="product-card"
                       style={{
-                        textAlign: 'center',
+                        textAlign: 'left',
                         border: '1px solid #e0e0e0',
                         overflow: 'hidden',
                         background: 'white',
@@ -847,11 +821,11 @@ function ProductPage() {
                         productId={`recent-${index}`}
                         showDiscountBadge={isFridayDiscount}
                       />
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start',paddingLeft: '10px', borderTop: '1px solid #e0e0e0', paddingTop: '3px' }}>
                         {(() => {
                           const { type, name } = parseProductTitle(product.title);
                           return (
-                            <div className="product-title" style={{ margin: '10px 0', fontSize: '1em', textAlign: 'center' }}>
+                            <div className="product-title" style={{ fontSize: '1em', textAlign: 'left' }}>
                               {type ? <span className="title-type">{type}</span> : null}
                               <span className="title-name">{name}</span>
                             </div>
@@ -869,12 +843,6 @@ function ProductPage() {
           </>
         )}
       </main>
-
-      <footer className="site-footer fade-up">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
-      </footer>
-
       <Footer />
     </div>
   )

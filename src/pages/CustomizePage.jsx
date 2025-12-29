@@ -15,9 +15,13 @@ function CustomizePage() {
   const [backTexts, setBackTexts] = useState([])
   const [frontImages, setFrontImages] = useState([])
   const [backImages, setBackImages] = useState([])
+  const [frontImageFiles, setFrontImageFiles] = useState([])
+  const [backImageFiles, setBackImageFiles] = useState([])
   const [activeElement, setActiveElement] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, fontSize: 24 })
   const [celebrate, setCelebrate] = useState(0)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [sliderIndex, setSliderIndex] = useState(0) // 0 for front, 1 for back
@@ -151,7 +155,7 @@ function CustomizePage() {
       }
 
       const reader = new FileReader()
-      
+
       reader.onloadend = () => {
         if (reader.error) {
           console.error('Error reading file:', reader.error)
@@ -170,12 +174,14 @@ function CustomizePage() {
           width: 100,
           height: 100
         }
-        
+
         if (side === 'front') {
           setFrontImages(prev => [...prev, newImage])
+          setFrontImageFiles(prev => [...prev, file])
           setActiveElement({ ...newImage, side: 'front', type: 'image' })
         } else {
           setBackImages(prev => [...prev, newImage])
+          setBackImageFiles(prev => [...prev, file])
           setActiveElement({ ...newImage, side: 'back', type: 'image' })
         }
 
@@ -292,7 +298,98 @@ function CustomizePage() {
   // Handle mouse/touch up
   const handleEndDrag = useCallback(() => {
     setIsDragging(false)
+    setIsResizing(false)
   }, [])
+
+  // Handle resize start for text
+  const handleResizeStart = (e, textEl, side) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    
+    setResizeStart({ x: clientX, y: clientY, fontSize: textEl.fontSize })
+    setIsResizing(true)
+    setActiveElement({ ...textEl, side, type: 'text' })
+  }
+
+  // Handle resize start for image with direction support
+  const handleImageResizeStart = (e, imgEl, side, direction = 'both') => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    
+    // Store initial values
+    const initialWidth = imgEl.width || 100
+    const initialHeight = imgEl.height || 100
+    
+    setResizeStart({ 
+      x: clientX, 
+      y: clientY, 
+      width: initialWidth, 
+      height: initialHeight,
+      direction: direction // 'horizontal', 'vertical', or 'both'
+    })
+    setIsResizing(true)
+    setActiveElement({ ...imgEl, side, type: 'image' })
+  }
+
+  // Handle resize move
+  const handleResizeMove = useCallback((e) => {
+    if (!isResizing || !activeElement) return
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    
+    // Calculate distance from start point
+    const deltaX = clientX - resizeStart.x
+    const deltaY = clientY - resizeStart.y
+    
+    if (activeElement.type === 'text') {
+      const delta = (deltaX + deltaY) / 2
+      // Scale factor: every 2 pixels of drag = 1px font size change
+      const newFontSize = Math.max(12, Math.min(72, resizeStart.fontSize + delta / 2))
+      
+      // Update the text element
+      const setter = activeElement.side === 'front' ? setFrontTexts : setBackTexts
+      setter(prev => prev.map(t => t.id === activeElement.id ? { ...t, fontSize: Math.round(newFontSize) } : t))
+      setActiveElement(prev => prev ? { ...prev, fontSize: Math.round(newFontSize) } : prev)
+    } else if (activeElement.type === 'image') {
+      let newWidth = resizeStart.width
+      let newHeight = resizeStart.height
+      
+      const direction = resizeStart.direction || 'both'
+      
+      if (direction === 'horizontal') {
+        // Only change width
+        newWidth = Math.max(30, Math.min(300, resizeStart.width + deltaX))
+      } else if (direction === 'vertical') {
+        // Only change height
+        newHeight = Math.max(30, Math.min(300, resizeStart.height + deltaY))
+      } else {
+        // Change both proportionally (corner handles)
+        const delta = (deltaX + deltaY) / 2
+        newWidth = Math.max(30, Math.min(300, resizeStart.width + delta))
+        newHeight = Math.max(30, Math.min(300, resizeStart.height + delta))
+      }
+      
+      // Update the image element
+      const setter = activeElement.side === 'front' ? setFrontImages : setBackImages
+      setter(prev => prev.map(img => img.id === activeElement.id ? { 
+        ...img, 
+        width: Math.round(newWidth), 
+        height: Math.round(newHeight) 
+      } : img))
+      setActiveElement(prev => prev ? { 
+        ...prev, 
+        width: Math.round(newWidth), 
+        height: Math.round(newHeight) 
+      } : prev)
+    }
+  }, [isResizing, activeElement, resizeStart])
 
   // Add document-level mouse and touch event listeners
   useEffect(() => {
@@ -314,6 +411,27 @@ function CustomizePage() {
       }
     }
   }, [isDragging, handleMove, handleEndDrag])
+
+  // Add document-level listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove)
+      document.addEventListener('mouseup', handleEndDrag)
+      document.addEventListener('touchmove', handleResizeMove, { passive: false })
+      document.addEventListener('touchend', handleEndDrag)
+      document.body.style.userSelect = 'none'
+      document.body.style.cursor = 'nwse-resize'
+      
+      return () => {
+        document.removeEventListener('mousemove', handleResizeMove)
+        document.removeEventListener('mouseup', handleEndDrag)
+        document.removeEventListener('touchmove', handleResizeMove)
+        document.removeEventListener('touchend', handleEndDrag)
+        document.body.style.userSelect = ''
+        document.body.style.cursor = ''
+      }
+    }
+  }, [isResizing, handleResizeMove, handleEndDrag])
 
   // Update active element
   const updateActiveElement = (updates) => {
@@ -451,32 +569,36 @@ function CustomizePage() {
       // Capture front and back preview images
       const frontImage = await captureTShirtPreview('front')
       const backImage = await captureTShirtPreview('back')
-      
+
       const customTShirtData = getCustomTShirtData()
       customTShirtData.frontPreviewImage = frontImage
       customTShirtData.backPreviewImage = backImage
-      
+
       const totalAmount = basePrice * quantity
-      
+
       return await createCustomTShirtOrder({
         customTShirt: customTShirtData,
         shippingAddress,
         totalAmount,
         size: selectedSize,
-        quantity: quantity
+        quantity: quantity,
+        frontImages: frontImageFiles,
+        backImages: backImageFiles
       }, token)
     } catch (error) {
       console.error('Error capturing preview images:', error)
       // Continue without images if capture fails
       const customTShirtData = getCustomTShirtData()
       const totalAmount = basePrice * quantity
-      
+
       return await createCustomTShirtOrder({
         customTShirt: customTShirtData,
         shippingAddress,
         totalAmount,
         size: selectedSize,
-        quantity: quantity
+        quantity: quantity,
+        frontImages: frontImageFiles,
+        backImages: backImageFiles
       }, token)
     }
   }
@@ -576,6 +698,7 @@ function CustomizePage() {
           // Support both percentage and pixel positioning for backward compatibility
           const leftPos = textEl.xPercent !== undefined ? `${textEl.xPercent}%` : `${textEl.x || 0}px`
           const topPos = textEl.yPercent !== undefined ? `${textEl.yPercent}%` : `${textEl.y || 0}px`
+          const isSelected = activeElement && activeElement.id === textEl.id && activeElement.side === side
           
           return (
           <div
@@ -591,10 +714,10 @@ function CustomizePage() {
               fontWeight: 'bold',
               cursor: isDragging && activeElement && activeElement.id === textEl.id ? 'grabbing' : 'grab',
               padding: '4px',
-              border: activeElement && activeElement.id === textEl.id && activeElement.side === side
+              border: isSelected
                 ? '2px solid #e17055'
                 : '2px solid transparent',
-              backgroundColor: activeElement && activeElement.id === textEl.id && activeElement.side === side
+              backgroundColor: isSelected
                 ? 'rgba(225, 112, 85, 0.1)'
                 : 'transparent',
               borderRadius: '4px',
@@ -618,6 +741,103 @@ function CustomizePage() {
             }}
           >
             {textEl.text}
+            
+            {/* Corner resize handles - show when text is selected */}
+            {isSelected && (
+              <>
+                {/* Bottom-right corner resize handle */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-6px',
+                    right: '-6px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nwse-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleResizeStart(e, textEl, side)}
+                  onTouchStart={(e) => handleResizeStart(e, textEl, side)}
+                />
+                {/* Top-left corner resize handle */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    left: '-6px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nwse-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleResizeStart(e, textEl, side)}
+                  onTouchStart={(e) => handleResizeStart(e, textEl, side)}
+                />
+                {/* Top-right corner resize handle */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nesw-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleResizeStart(e, textEl, side)}
+                  onTouchStart={(e) => handleResizeStart(e, textEl, side)}
+                />
+                {/* Bottom-left corner resize handle */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-6px',
+                    left: '-6px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nesw-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleResizeStart(e, textEl, side)}
+                  onTouchStart={(e) => handleResizeStart(e, textEl, side)}
+                />
+                {/* Size indicator */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-22px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 'normal',
+                    whiteSpace: 'nowrap',
+                    zIndex: 100
+                  }}
+                >
+                  {textEl.fontSize}px
+                </div>
+              </>
+            )}
           </div>
           )
         })}
@@ -627,6 +847,7 @@ function CustomizePage() {
           // Support both percentage and pixel positioning for backward compatibility
           const leftPos = imgEl.xPercent !== undefined ? `${imgEl.xPercent}%` : `${imgEl.x || 0}px`
           const topPos = imgEl.yPercent !== undefined ? `${imgEl.yPercent}%` : `${imgEl.y || 0}px`
+          const isImageSelected = activeElement && activeElement.id === imgEl.id && activeElement.side === side
           
           return (
           <div
@@ -639,14 +860,14 @@ function CustomizePage() {
               width: `${imgEl.width}px`,
               height: `${imgEl.height}px`,
               cursor: isDragging && activeElement && activeElement.id === imgEl.id ? 'grabbing' : 'grab',
-              border: activeElement && activeElement.id === imgEl.id && activeElement.side === side
+              border: isImageSelected
                 ? '2px solid #e17055'
                 : '2px solid transparent',
-              backgroundColor: activeElement && activeElement.id === imgEl.id && activeElement.side === side
+              backgroundColor: isImageSelected
                 ? 'rgba(225, 112, 85, 0.1)'
                 : 'transparent',
               borderRadius: '4px',
-              overflow: 'hidden',
+              overflow: 'visible',
               pointerEvents: 'auto',
               zIndex: 10
             }}
@@ -672,6 +893,183 @@ function CustomizePage() {
                 pointerEvents: 'none'
               }}
             />
+            
+            {/* Resize handles - show when image is selected */}
+            {isImageSelected && (
+              <>
+                {/* Corner handles - resize both width & height */}
+                {/* Bottom-right corner */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    right: '-8px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#00b894',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nwse-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                />
+                {/* Top-left corner */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-8px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#00b894',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nwse-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                />
+                {/* Top-right corner */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-8px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#00b894',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nesw-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                />
+                {/* Bottom-left corner */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    left: '-8px',
+                    width: '14px',
+                    height: '14px',
+                    background: '#00b894',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    cursor: 'nesw-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'both')}
+                />
+                
+                {/* Edge handles - resize width OR height only */}
+                {/* Right edge - horizontal resize (width only) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    right: '-8px',
+                    transform: 'translateY(-50%)',
+                    width: '12px',
+                    height: '24px',
+                    background: '#0984e3',
+                    border: '2px solid white',
+                    borderRadius: '6px',
+                    cursor: 'ew-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'horizontal')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'horizontal')}
+                />
+                {/* Left edge - horizontal resize (width only) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '-8px',
+                    transform: 'translateY(-50%)',
+                    width: '12px',
+                    height: '24px',
+                    background: '#0984e3',
+                    border: '2px solid white',
+                    borderRadius: '6px',
+                    cursor: 'ew-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'horizontal')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'horizontal')}
+                />
+                {/* Bottom edge - vertical resize (height only) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '24px',
+                    height: '12px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '6px',
+                    cursor: 'ns-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'vertical')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'vertical')}
+                />
+                {/* Top edge - vertical resize (height only) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '24px',
+                    height: '12px',
+                    background: '#e17055',
+                    border: '2px solid white',
+                    borderRadius: '6px',
+                    cursor: 'ns-resize',
+                    zIndex: 101,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseDown={(e) => handleImageResizeStart(e, imgEl, side, 'vertical')}
+                  onTouchStart={(e) => handleImageResizeStart(e, imgEl, side, 'vertical')}
+                />
+                
+                {/* Size indicator */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-28px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 'normal',
+                    whiteSpace: 'nowrap',
+                    zIndex: 100
+                  }}
+                >
+                  {imgEl.width}×{imgEl.height}
+                </div>
+              </>
+            )}
           </div>
           )
         })}
@@ -1199,30 +1597,6 @@ function CustomizePage() {
                         fontSize: isMobile ? '0.75rem' : '0.9rem', 
                         color: '#7f6b5d' 
                       }}>
-                        Font Size
-                      </label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
-                        <input
-                          type="range"
-                          min="12"
-                          max="48"
-                          value={activeElement.fontSize}
-                          onChange={(e) => updateActiveElement({ fontSize: parseInt(e.target.value) })}
-                          style={{ flex: '1', minWidth: isMobile ? '60px' : '100px' }}
-                        />
-                        <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', minWidth: isMobile ? '35px' : '40px' }}>
-                          {activeElement.fontSize}px
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div style={{ flex: isMobile ? 'none' : '0 1 auto' }}>
-                      <label style={{ 
-                        display: 'block', 
-                        marginBottom: isMobile ? '4px' : '8px', 
-                        fontSize: isMobile ? '0.75rem' : '0.9rem', 
-                        color: '#7f6b5d' 
-                      }}>
                         Color
                       </label>
                       <input
@@ -1273,59 +1647,19 @@ function CustomizePage() {
 
               {activeElement.type === 'image' && (
                 <div style={{ 
-                  display: isMobile ? 'grid' : 'flex', 
-                  gridTemplateColumns: isMobile ? '1fr 1fr' : 'none',
-                  gap: isMobile ? '8px' : '16px', 
-                  flexWrap: 'wrap',
-                  flexDirection: isMobile ? 'row' : 'row'
+                  padding: isMobile ? '8px' : '12px',
+                  background: '#f0f9ff',
+                  borderRadius: '8px',
+                  border: '1px dashed #00b894'
                 }}>
-                  <div style={{ flex: isMobile ? 'none' : '0 1 auto' }}>
-                    <label style={{ 
-                      display: 'block', 
-                      marginBottom: isMobile ? '4px' : '8px', 
-                      fontSize: isMobile ? '0.75rem' : '0.9rem', 
-                      color: '#7f6b5d' 
-                    }}>
-                      Width
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
-                      <input
-                        type="range"
-                        min="50"
-                        max="200"
-                        value={activeElement.width}
-                        onChange={(e) => updateActiveElement({ width: parseInt(e.target.value) })}
-                        style={{ flex: '1', minWidth: isMobile ? '60px' : '100px' }}
-                      />
-                      <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', minWidth: isMobile ? '45px' : '50px' }}>
-                        {activeElement.width}px
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div style={{ flex: isMobile ? 'none' : '0 1 auto' }}>
-                    <label style={{ 
-                      display: 'block', 
-                      marginBottom: isMobile ? '4px' : '8px', 
-                      fontSize: isMobile ? '0.75rem' : '0.9rem', 
-                      color: '#7f6b5d' 
-                    }}>
-                      Height
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
-                      <input
-                        type="range"
-                        min="50"
-                        max="200"
-                        value={activeElement.height}
-                        onChange={(e) => updateActiveElement({ height: parseInt(e.target.value) })}
-                        style={{ flex: '1', minWidth: isMobile ? '60px' : '100px' }}
-                      />
-                      <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', minWidth: isMobile ? '45px' : '50px' }}>
-                        {activeElement.height}px
-                      </span>
-                    </div>
-                  </div>
+                  <p style={{ 
+                    fontSize: isMobile ? '0.75rem' : '0.85rem', 
+                    color: '#00b894',
+                    margin: 0,
+                    textAlign: 'center'
+                  }}>
+                    💡 Drag the corner handles on the image to resize
+                  </p>
                 </div>
               )}
             </div>

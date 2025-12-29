@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import { createPayment, verifyPayment } from '../Api'
+import { useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
+import { createPayment, verifyPayment, checkPincodeServiceability } from '../Api'
 import { formatPrice } from '../utils/discount'
 
-const CustomCheckoutModal = ({ 
-  isOpen, 
-  onClose, 
-  customTShirtData, 
-  totalAmount, 
-  size, 
+const CustomCheckoutModal = ({
+  isOpen,
+  onClose,
+  customTShirtData,
+  totalAmount,
+  size,
   quantity,
   onOrderSuccess,
   createOrder
 }) => {
+  const navigate = useNavigate()
   const [step, setStep] = useState(1) // 1: Address, 2: Payment, 3: Success
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [orderId, setOrderId] = useState(null)
   const [orderDetails, setOrderDetails] = useState(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
-  
+  const [pincodeServiceable, setPincodeServiceable] = useState(null)
+
   // Address form state
   const [address, setAddress] = useState({
     fullName: '',
@@ -30,6 +34,9 @@ const CustomCheckoutModal = ({
     pincode: '',
     landmark: ''
   })
+
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState('prepaid') // 'cod' or 'prepaid'
 
   // Handle resize
   useEffect(() => {
@@ -69,9 +76,24 @@ const CustomCheckoutModal = ({
     }
   }, [])
 
-  const handleAddressChange = (e) => {
+  const handleAddressChange = async (e) => {
     const { name, value } = e.target
-    setAddress(prev => ({ ...prev, [name]: value }))
+    setAddress(prev => ({ ...prev, [name]: value.trim() }))
+
+    // Check pincode serviceability when pincode changes
+    if (name === 'pincode' && value.length === 6 && /^\d{6}$/.test(value)) {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await checkPincodeServiceability(value, token)
+        // Check if pincode is serviceable - check both response.isSuccess and response.data.status/delivery
+        const isServiceable = response.isSuccess && (response.data?.status === true || response.data?.delivery === 'Yes')
+        setPincodeServiceable(isServiceable)
+      } catch (err) {
+        setPincodeServiceable(false)
+      }
+    } else if (name === 'pincode') {
+      setPincodeServiceable(null)
+    }
   }
 
   const validateAddress = () => {
@@ -107,10 +129,10 @@ const CustomCheckoutModal = ({
 
   const handleProceedToPayment = async () => {
     if (!validateAddress()) return
-    
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -119,24 +141,45 @@ const CustomCheckoutModal = ({
         return
       }
 
-      // Create custom t-shirt order with shipping address
-      // This will capture the preview images automatically
+      // Create order with shipping address and payment method
       const shippingAddress = formatShippingAddress()
-      const orderResponse = await createOrder(shippingAddress, token)
-      
+      const orderResponse = await createOrder(shippingAddress, paymentMethod, token)
+
       if (orderResponse.isSuccess && orderResponse.data) {
         setOrderId(orderResponse.data._id)
         setOrderDetails(orderResponse.data)
-        setStep(2)
-        
-        // Initiate payment after short delay
-        setTimeout(() => {
-          initiatePayment(orderResponse.data._id, token)
-        }, 500)
+
+        if (paymentMethod === 'cod') {
+          // For COD, skip payment step and go directly to success
+          setStep(3)
+          // Notify parent component about successful order
+          if (onOrderSuccess) {
+            onOrderSuccess(orderResponse.data._id)
+          }
+          // Dispatch cart changed event
+          window.dispatchEvent(new Event('cartChanged'))
+        } else {
+          // For prepaid, proceed to payment
+          setStep(2)
+          // Initiate payment after short delay
+          setTimeout(() => {
+            initiatePayment(orderResponse.data._id, token)
+          }, 500)
+        }
       } else {
         setError(orderResponse.message || 'Failed to create order')
       }
     } catch (err) {
+      // Check for authentication errors in catch block
+      if (err.message?.includes('Invalid credentials') || err.message?.includes('UNAUTHORIZED')) {
+        localStorage.removeItem('token')
+        setError('Session expired. Please log in again.')
+        setTimeout(() => {
+          onClose()
+          navigate('/login')
+        }, 2000)
+        return
+      }
       setError(err.message || 'Failed to create order')
     } finally {
       setLoading(false)
@@ -157,7 +200,7 @@ const CustomCheckoutModal = ({
           key: key,
           amount: amount,
           currency: currency,
-          name: 'TBH Store',
+          name: 'THE WOLF STREET',
           description: 'Custom T-Shirt Order Payment',
           order_id: razorpayOrderId,
           handler: async function (response) {
@@ -220,6 +263,14 @@ const CustomCheckoutModal = ({
 
   const handleRetryPayment = () => {
     const token = localStorage.getItem('token')
+    if (!token) {
+      setError('Session expired. Please log in again.')
+      setTimeout(() => {
+        onClose()
+        navigate('/login')
+      }, 2000)
+      return
+    }
     if (orderId && token) {
       initiatePayment(orderId, token)
     }
@@ -252,7 +303,7 @@ const CustomCheckoutModal = ({
       alignItems: isMobile ? 'flex-end' : 'center',
       justifyContent: 'center',
       zIndex: 10000,
-      padding: isMobile ? '0' : '20px',
+      padding: isMobile ? '0' : '0px',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch'
     }}
@@ -264,10 +315,11 @@ const CustomCheckoutModal = ({
     >
       <div style={{
         background: 'white',
-        borderRadius: isMobile ? '20px 20px 0 0' : '16px',
+        borderRadius: isMobile ? '20px 20px 0 0' : '0px',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '600px',
-        maxHeight: isMobile ? '95vh' : '90vh',
+        maxWidth: isMobile ? '100%' : '100%',
+        height: isMobile ? 'auto' : '100%',
+        maxHeight: isMobile ? '95vh' : '100%',
         overflow: 'auto',
         position: 'relative',
         marginTop: isMobile ? 'auto' : '0',
@@ -418,6 +470,90 @@ const CustomCheckoutModal = ({
                 maxLength="6"
                 required
               />
+
+              {/* Payment Method Selection */}
+              <div style={{ marginTop: isMobile ? '16px' : '20px' }}>
+                <h3 style={{
+                  fontSize: isMobile ? '1rem' : '1.1rem',
+                  fontWeight: 'bold',
+                  marginBottom: isMobile ? '12px' : '16px',
+                  color: '#111'
+                }}>
+                  Payment Method
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '12px' }}>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    padding: isMobile ? '8px' : '10px',
+                    border: paymentMethod === 'prepaid' ? '2px solid #e17055' : '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: paymentMethod === 'prepaid' ? '#fef7f5' : 'white',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="prepaid"
+                      checked={paymentMethod === 'prepaid'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      style={{ marginRight: isMobile ? '8px' : '12px' }}
+                    />
+                    <div>
+                      <div style={{
+                        fontWeight: 'bold',
+                        fontSize: isMobile ? '0.9rem' : '1rem',
+                        color: '#111',
+                        marginBottom: '2px'
+                      }}>
+                        Prepaid (Online Payment)
+                      </div>
+                      <div style={{
+                        fontSize: isMobile ? '0.8rem' : '0.9rem',
+                        color: '#666'
+                      }}>
+                        Pay now using UPI, Card, Net Banking
+                      </div>
+                    </div>
+                  </label>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    padding: isMobile ? '8px' : '10px',
+                    border: paymentMethod === 'cod' ? '2px solid #e17055' : '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: paymentMethod === 'cod' ? '#fef7f5' : 'white',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      style={{ marginRight: isMobile ? '8px' : '12px' }}
+                    />
+                    <div>
+                      <div style={{
+                        fontWeight: 'bold',
+                        fontSize: isMobile ? '0.9rem' : '1rem',
+                        color: '#111',
+                        marginBottom: '2px'
+                      }}>
+                        Cash on Delivery (COD)
+                      </div>
+                      <div style={{
+                        fontSize: isMobile ? '0.8rem' : '0.9rem',
+                        color: '#666'
+                      }}>
+                        Pay when you receive the product
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div style={{ 

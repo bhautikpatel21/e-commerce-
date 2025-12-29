@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { getCart, updateCart, removeFromCart } from '../Api'
 import Toast from '../components/Toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CheckoutModal from '../components/CheckoutModal'
-import { isFriday, calculateDiscountedPrice, formatPrice, qualifiesForAmountDiscount, calculateAmountDiscountedTotal } from '../utils/discount'
+import { isFriday, calculateDiscountedPrice, formatPrice, qualifiesForAmountDiscount, calculateAmountDiscountedTotal, calculateAmountDiscount, getMinOrderForDiscount } from '../utils/discount'
+
+const SHIPPING_PINCODES = [
+  '110001', '560001', '400001', '700001', '600001' // example serviceable pincodes; expand as needed
+]
 
 const Cart = () => {
+  const location = useLocation()
   const [cartItems, setCartItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [isFridayDiscount, setIsFridayDiscount] = useState(isFriday())
   const [showCheckout, setShowCheckout] = useState(false)
+  
+  // --- Pin code and delivery state ---
+  const [shippingPincode, setShippingPincode] = useState('')
+  const [isPincodeChecked, setIsPincodeChecked] = useState(false)
+  const [isShippingAvailable, setIsShippingAvailable] = useState(null) // null: not checked, true/false after check
 
   const fetchCart = async () => {
     const token = localStorage.getItem('token')
@@ -41,6 +52,21 @@ const Cart = () => {
     fetchCart()
     setIsFridayDiscount(isFriday())
   }, [])
+
+  // Auto-open checkout if coming from Buy Now
+  useEffect(() => {
+    if (location.state?.autoCheckout && !loading && cartItems.length > 0) {
+      const token = localStorage.getItem('token')
+      if (token) {
+        // Small delay to ensure cart is fully loaded
+        setTimeout(() => {
+          setShowCheckout(true)
+          // Clear the state to avoid re-triggering
+          window.history.replaceState({}, document.title)
+        }, 300)
+      }
+    }
+  }, [location.state, loading, cartItems.length])
 
   const calculateTotal = () => {
     const subtotal = cartItems.reduce((total, item) => {
@@ -138,14 +164,25 @@ const Cart = () => {
   if (loading) {
     return (
       <div className="page-shell">
-        <marquee
-          className="announcement-bar fade-down"
-          direction="right"
-          behavior="scroll"
-          scrollamount="20"
-        >
-          <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-        </marquee>
+                <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
         <Navbar />
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <p>Loading cart...</p>
@@ -158,14 +195,25 @@ const Cart = () => {
   if (error) {
     return (
       <div className="page-shell">
-        <marquee
-          className="announcement-bar fade-down"
-          direction="right"
-          behavior="scroll"
-          scrollamount="20"
-        >
-          <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-        </marquee>
+                <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
         <Navbar />
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <p style={{ color: 'red' }}>Error: {error}</p>
@@ -184,18 +232,32 @@ const Cart = () => {
           onClose={() => setToast({ show: false, message: '', type: 'success' })}
         />
       )}
-      <marquee
-        className="announcement-bar fade-down"
-        direction="right"
-        behavior="scroll"
-        scrollamount="20"
-      >
-        <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-      </marquee>
+      <div className="announcement-bar fade-down" style={{ overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+        <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
+      </div>
+
       <Navbar />
-      <main className="cart-main" style={{ padding: '20px 20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
+      <main className="cart-main" style={{ padding: '20px 0 40px', maxWidth: '1200px', margin: '0 auto' }}>
         {/* Cart Header */}
-        <div style={{ marginBottom: '24px' }}>
+        <div className="text-center lg:text-left" style={{ marginBottom: '24px' }}>
           <h1 style={{ 
             fontSize: '28px', 
             fontWeight: '700', 
@@ -229,12 +291,7 @@ const Cart = () => {
             <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Looks like you haven't added any items yet</p>
           </div>
         ) : (
-          <div className="cart-layout" style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '32px',
-            alignItems: 'start'
-          }}>
+          <div className="cart-layout">
             {/* Cart Items Section */}
             <div className="cart-items-container" style={{ 
               display: 'flex', 
@@ -243,7 +300,8 @@ const Cart = () => {
               background: 'white',
               borderRadius: '12px',
               padding: '16px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              minWidth: 0
             }}>
               {cartItems.map((item, index) => (
                 <div 
@@ -420,9 +478,7 @@ const Cart = () => {
               padding: '24px', 
               background: '#f9f9f9', 
               borderRadius: '12px',
-              height: 'fit-content',
-              position: 'sticky',
-              top: '100px'
+              height: 'fit-content'
             }}>
               <h2 style={{ 
                 fontSize: '18px', 
@@ -449,11 +505,35 @@ const Cart = () => {
                     </span>
                   </div>
                 )}
+                {qualifiesForAmountDiscount(calculateSubtotal()) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ color: '#22c55e', fontSize: '14px' }}>Flat 10% Off (Above ₹{getMinOrderForDiscount()})</span>
+                    <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '500' }}>
+                      -{formatPrice(calculateAmountDiscount(calculateSubtotal()))}
+                    </span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ color: '#666', fontSize: '14px' }}>Shipping</span>
                   <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '600' }}>FREE</span>
                 </div>
               </div>
+
+              {/* Show how much more to add for discount */}
+              {!qualifiesForAmountDiscount(calculateSubtotal()) && calculateSubtotal() > 0 && (
+                <div style={{ 
+                  background: '#fef3c7', 
+                  border: '1px dashed #f59e0b',
+                  borderRadius: '8px', 
+                  padding: '12px', 
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#92400e' }}>
+                    🎉 Add <strong>{formatPrice(getMinOrderForDiscount() - calculateSubtotal() + 1)}</strong> more to get <strong>Flat 10% OFF!</strong>
+                  </p>
+                </div>
+              )}
 
               {/* Total */}
               <div style={{ 
@@ -465,9 +545,33 @@ const Cart = () => {
                 marginBottom: '20px'
               }}>
                 <span style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>Total</span>
-                <span style={{ fontSize: '24px', fontWeight: '700', color: '#111' }}>
-                  {formatPrice(calculateTotal())}
-                </span>
+                <div style={{ textAlign: 'right' }}>
+                  {qualifiesForAmountDiscount(calculateSubtotal()) && (
+                    <span style={{ 
+                      fontSize: '14px', 
+                      color: '#999', 
+                      textDecoration: 'line-through',
+                      display: 'block',
+                      marginBottom: '4px'
+                    }}>
+                      {formatPrice(calculateSubtotal())}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '24px', fontWeight: '700', color: qualifiesForAmountDiscount(calculateSubtotal()) ? '#16a34a' : '#111' }}>
+                    {formatPrice(calculateTotal())}
+                  </span>
+                  {qualifiesForAmountDiscount(calculateSubtotal()) && (
+                    <span style={{ 
+                      display: 'block',
+                      fontSize: '12px', 
+                      color: '#16a34a',
+                      fontWeight: '600',
+                      marginTop: '2px'
+                    }}>
+                      You saved {formatPrice(calculateAmountDiscount(calculateSubtotal()))}!
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Checkout Button */}

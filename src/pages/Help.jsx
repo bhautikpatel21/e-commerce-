@@ -40,14 +40,27 @@ const Help = () => {
 
   return (
     <div className="page-shell">
-      <marquee
-        className="announcement-bar fade-down"
-        direction="right"
-        behavior="scroll"
-        scrollamount="20"
-      >
-        <p>TBH is better on the app · Flat ₹300 off on your first order</p>
-      </marquee>
+      <div className="announcement-bar fade-down" style={{ overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+        <div className="marquee-content" style={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Free & Fast Shipping</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>· 100% Secure Payment</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Flat 10% OFF on Orders Above ₹2099</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Premium Fabric Quality</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>Customization Options Available</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>All Friday Mega Sale</span>
+          <span style={{ display: 'inline-block', marginRight: '30px' }}>7-Day Easy Return Policy</span>
+        </div>
+      </div>
 
       <Navbar />
 
@@ -129,7 +142,7 @@ const Help = () => {
               <FaEnvelope className="text-2xl text-blue-500" />
               <div>
                 <h4 className="font-semibold text-gray-900">Email Support</h4>
-                <p className="text-gray-600">support@example.com</p>
+                <p className="text-gray-600">thewolfstreetindia@gmail.com</p>
               </div>
             </motion.div>
             <motion.div
@@ -140,7 +153,7 @@ const Help = () => {
               <FaPhone className="text-2xl text-green-500" />
               <div>
                 <h4 className="font-semibold text-gray-900">Phone Support</h4>
-                <p className="text-gray-600">1-800-HELP-NOW</p>
+                <p className="text-gray-600">+91 9904699062</p>
               </div>
             </motion.div>
           </motion.div>
@@ -149,8 +162,7 @@ const Help = () => {
       </main>
 
       <footer className="site-footer fade-up">
-        <p>Crafted & marketed by Bear House Clothing Pvt Ltd · Bengaluru, India</p>
-        <small>Reference design inspired by MITOK product page on The Bear House</small>
+        <p>Crafted & marketed by The Wolf Street · surat, India</p>
       </footer>
 
       <Footer />

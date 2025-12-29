@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { getProductReviews, addReview, deleteReview, getUserProfile } from '../Api'
 import Toast from './Toast'
 
@@ -18,6 +18,7 @@ const Review = ({ productId }) => {
   const [deletingReviewId, setDeletingReviewId] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [hasReviewed, setHasReviewed] = useState(false)
+  const scrollContainerRef = useRef(null)
 
   useEffect(() => {
     if (productId) {
@@ -190,7 +191,7 @@ const Review = ({ productId }) => {
   const averageRating = calculateAverageRating()
 
   return (
-    <div className="flex flex-col py-4 mx-auto max-w-4xl px-4">
+    <div className="flex flex-col items-center py-8 mx-auto w-full px-4 sm:px-6 lg:px-8">
       {toast.show && (
         <Toast
           message={toast.message}
@@ -198,7 +199,7 @@ const Review = ({ productId }) => {
           onClose={() => setToast({ show: false, message: '', type: 'success' })}
         />
       )}
-      <h2 className="text-gray-900 text-lg font-bold uppercase mb-6 text-center">CUSTOMER REVIEWS</h2>
+      <h2 className="text-gray-900 text-lg font-bold uppercase mb-6 text-center w-full">CUSTOMER REVIEWS</h2>
 
       {/* Success Message */}
       {success && (
@@ -346,88 +347,150 @@ const Review = ({ productId }) => {
 
       {/* Reviews List */}
       {loading ? (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <p className="text-gray-600">Loading reviews...</p>
         </div>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {reviews.map((review) => {
-            // Check multiple possible ID fields
-            const reviewUserId = review.user?._id || review.user?.id || review.userId || review.user
-            const isOwnReview = currentUserId && reviewUserId && String(reviewUserId) === String(currentUserId)
-            
-            // Debug logging (remove in production)
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Review:', {
-                reviewId: review._id,
-                reviewUserId,
-                currentUserId,
-                isOwnReview,
-                reviewUser: review.user
-              })
-            }
-            
-            return (
-              <div key={review._id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-gray-900">
-                          {review.user?.name || review.userName || 'Anonymous'}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {review.createdAt
-                            ? new Date(review.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })
-                            : ''}
-                        </div>
+        <div className="w-full flex justify-center">
+          {/* Reviews Slider Container */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+            style={{
+              scrollSnapType: 'x mandatory',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+              maxWidth: '100%',
+              justifyContent: reviews.length <= 6 ? 'center' : 'flex-start',
+            }}
+          >
+            {reviews.map((review) => {
+              // Check multiple possible ID fields
+              const reviewUserId = review.user?._id || review.user?.id || review.userId || review.user
+              const isOwnReview = currentUserId && reviewUserId && String(reviewUserId) === String(currentUserId)
+              
+              return (
+                <div 
+                  key={review._id} 
+                  className="flex-shrink-0 bg-white flex justify-center items-center rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
+                  style={{
+                    scrollSnapAlign: 'start',
+                    width: '220px',
+                  }}
+                >
+                  {/* Header with Avatar */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-semibold text-sm">
+                      {(review.user?.name || review.userName || 'A').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 text-base mb-1">
+                        {review.user?.name || review.userName || 'Anonymous'}
                       </div>
-                      {isOwnReview && (
-                        <button
-                          onClick={() => handleDeleteReview(review._id)}
-                          disabled={deletingReviewId === review._id}
-                          className="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Delete your review"
-                        >
-                          {deletingReviewId === review._id ? 'Deleting...' : 'Delete'}
-                        </button>
+                      <div className="text-xs text-gray-400">
+                        {review.createdAt
+                          ? new Date(review.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : ''}
+                      </div>
+                    </div>
+                    {isOwnReview && (
+                      <button
+                        onClick={() => handleDeleteReview(review._id)}
+                        disabled={deletingReviewId === review._id}
+                        className="text-red-500 hover:text-red-700 text-lg px-2 py-1 rounded-full hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        title="Delete your review"
+                      >
+                        {deletingReviewId === review._id ? '...' : '×'}
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Rating */}
+                  <div className="mb-3">
+                    {renderStars(review.rating || 0, false, 'text-base')}
+                  </div>
+                  
+                  {/* Comment */}
+                  <p className="text-gray-600 text-sm mb-4 leading-relaxed flex-grow" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 4,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}>
+                    {review.comment || ''}
+                  </p>
+                  
+                  {/* Images */}
+                  {review.images && review.images.length > 0 && (
+                    <div className="mt-auto flex flex-wrap gap-2">
+                      {review.images.slice(0, 3).map((imagePath, imgIndex) => {
+                        let fullImageUrl
+                        if (imagePath.startsWith('http')) {
+                          fullImageUrl = imagePath
+                        } else {
+                          // Remove /v1/ from the path if it exists
+                          const cleanPath = imagePath.replace(/^\/?v1\//, '/')
+                          const imageUrl = (import.meta.env.VITE_API_IMAGE_URL || 'https://thewolfstreet.onrender.com').replace(/\/$/, '')
+                          fullImageUrl = `${imageUrl}${cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath}`
+                        }
+                        return (
+                          <img
+                            key={imgIndex}
+                            src={fullImageUrl}
+                            alt={`Review image ${imgIndex + 1}`}
+                            className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-gray-400 hover:scale-105 transition-all duration-200"
+                            onClick={() => window.open(fullImageUrl, '_blank')}
+                          />
+                        )
+                      })}
+                      {review.images.length > 3 && (
+                        <div className="w-20 h-20 rounded-lg border-2 border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 hover:border-gray-400 transition-all">
+                          +{review.images.length - 3}
+                        </div>
                       )}
                     </div>
-                  </div>
-                  <div className="ml-4">
-                    {renderStars(review.rating || 0, false, 'text-xl')}
-                  </div>
+                  )}
                 </div>
-                <p className="text-gray-700 mt-2">{review.comment || ''}</p>
-                {review.images && review.images.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {review.images.map((imagePath, imgIndex) => {
-                      const fullImageUrl = imagePath.startsWith('http') 
-                        ? imagePath 
-                        : `${import.meta.env.VITE_API_BASE_URL || 'https://prectise-2.onrender.com'}/${imagePath}`
-                      return (
-                        <img
-                          key={imgIndex}
-                          src={fullImageUrl}
-                          alt={`Review image ${imgIndex + 1}`}
-                          className="w-24 h-24 object-cover rounded border border-gray-300 cursor-pointer hover:opacity-80 transition"
-                          onClick={() => window.open(fullImageUrl, '_blank')}
-                        />
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
+          
+          {/* Scroll Navigation */}
+          {reviews.length > 6 && (
+            <div className="flex justify-center items-center mt-6 gap-3">
+              <button
+                onClick={() => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollBy({ left: -400, behavior: 'smooth' })
+                  }
+                }}
+                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 text-sm font-medium text-gray-700 shadow-sm hover:shadow"
+              >
+                ← Previous
+              </button>
+              <span className="text-sm text-gray-500">
+                {Math.ceil((scrollContainerRef.current?.scrollLeft || 0) / 400) + 1} / {Math.ceil(reviews.length / 6)}
+              </span>
+              <button
+                onClick={() => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' })
+                  }
+                }}
+                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 text-sm font-medium text-gray-700 shadow-sm hover:shadow"
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

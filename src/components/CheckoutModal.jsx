@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { createOrder, createPayment, verifyPayment } from '../Api'
+import { useNavigate } from 'react-router-dom'
+import { createOrder, createPayment, verifyPayment, getCouriers, calculateRate, checkPincodeServiceability } from '../Api'
 import { formatPrice } from '../utils/discount'
 
 const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess }) => {
@@ -9,7 +10,13 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
   const [orderId, setOrderId] = useState(null)
   const [orderDetails, setOrderDetails] = useState(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480)
-  
+
+  // Shipping state
+  const [shippingOptions, setShippingOptions] = useState([])
+  const [selectedShipping, setSelectedShipping] = useState(null)
+  const [shippingLoading, setShippingLoading] = useState(false)
+  const [pincodeServiceable, setPincodeServiceable] = useState(null)
+
   // Address form state
   const [address, setAddress] = useState({
     fullName: '',
@@ -22,6 +29,9 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
     landmark: ''
   })
 
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState('prepaid') // 'cod' or 'prepaid'
+
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
@@ -30,6 +40,104 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Check pincode serviceability when pincode changes
+  useEffect(() => {
+    const checkPincode = async () => {
+      if (address.pincode.length === 6) {
+        setShippingLoading(true)
+        try {
+          const response = await checkPincodeServiceability(address.pincode)
+          
+          // Check if pincode is serviceable - check both response.isSuccess and response.data.status
+          const isServiceable = response.isSuccess && (response.data?.status === true || response.data?.delivery === 'Yes')
+          setPincodeServiceable(isServiceable)
+
+          if (isServiceable) {
+            // Default free shipping option - always available if pincode is serviceable
+            const defaultShippingOption = {
+              _id: 'free-shipping',
+              name: 'Standard Shipping',
+              courierName: 'Standard Delivery',
+              rate: 0,
+              estimatedDays: '5-7'
+            }
+            
+            // Try to fetch couriers and rates
+            try {
+              const couriersResponse = await getCouriers()
+              if (couriersResponse.isSuccess && couriersResponse.data && couriersResponse.data.length > 0) {
+                // Calculate rates for each courier
+                const optionsWithRates = await Promise.all(
+                  couriersResponse.data.map(async (courier) => {
+                    try {
+                      const rateResponse = await calculateRate({
+                        courierId: courier.courierId || courier._id,
+                        pincode: address.pincode,
+                        weight: 0.5 // Default 500g
+                      })
+                      
+                      // Check for shipping rates in response
+                      const shippingRate = rateResponse.data?.shipment_rates?.[0]
+                      if (shippingRate) {
+                        return {
+                          ...courier,
+                          _id: courier._id || courier.courierId,
+                          name: shippingRate.courier_name || courier.courierName,
+                          rate: shippingRate.shipping_charge || 0,
+                          estimatedDays: shippingRate.service_mode === 'air' ? '2-3' : '5-7'
+                        }
+                      }
+                      return null
+                    } catch (err) {
+                      console.log('Rate calculation error:', err)
+                      return null
+                    }
+                  })
+                )
+                
+                const validOptions = optionsWithRates.filter(option => option !== null)
+                
+                // If we got valid courier options, use them; otherwise use default
+                if (validOptions.length > 0) {
+                  setShippingOptions(validOptions)
+                  setSelectedShipping(validOptions[0]) // Auto-select first option
+                } else {
+                  setShippingOptions([defaultShippingOption])
+                  setSelectedShipping(defaultShippingOption)
+                }
+              } else {
+                // No couriers configured, use default free shipping
+                setShippingOptions([defaultShippingOption])
+                setSelectedShipping(defaultShippingOption)
+              }
+            } catch (courierErr) {
+              console.log('Courier fetch error:', courierErr)
+              // Fallback to default shipping if courier fetch fails
+              setShippingOptions([defaultShippingOption])
+              setSelectedShipping(defaultShippingOption)
+            }
+          } else {
+            setShippingOptions([])
+            setSelectedShipping(null)
+          }
+        } catch (err) {
+          console.log('Pincode check error:', err)
+          setPincodeServiceable(false)
+          setShippingOptions([])
+          setSelectedShipping(null)
+        } finally {
+          setShippingLoading(false)
+        }
+      } else {
+        setPincodeServiceable(null)
+        setShippingOptions([])
+        setSelectedShipping(null)
+      }
+    }
+
+    checkPincode()
+  }, [address.pincode, cartItems])
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -80,6 +188,19 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
       setError('Please enter a valid 6-digit pincode')
       return false
     }
+    if (pincodeServiceable === false) {
+      setError('Delivery is not available to this pincode')
+      return false
+    }
+    // If pincode is serviceable but no shipping selected, auto-select free shipping
+    if (!selectedShipping && pincodeServiceable === true) {
+      // This is fine - we'll use default free shipping
+      return true
+    }
+    if (!selectedShipping && pincodeServiceable === null) {
+      setError('Please enter a valid pincode to check delivery availability')
+      return false
+    }
     return true
   }
 
@@ -97,10 +218,10 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
 
   const handleProceedToPayment = async () => {
     if (!validateAddress()) return
-    
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -109,19 +230,31 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
         return
       }
 
-      // Create order with shipping address
+      // Create order with shipping address and payment method
       const shippingAddress = formatShippingAddress()
-      const orderResponse = await createOrder(shippingAddress, token)
-      
+      const orderResponse = await createOrder(shippingAddress, paymentMethod, token)
+
       if (orderResponse.isSuccess && orderResponse.data) {
         setOrderId(orderResponse.data._id)
         setOrderDetails(orderResponse.data)
-        setStep(2)
-        
-        // Initiate payment after short delay
-        setTimeout(() => {
-          initiatePayment(orderResponse.data._id, token)
-        }, 500)
+
+        if (paymentMethod === 'cod') {
+          // For COD, skip payment step and go directly to success
+          setStep(3)
+          // Notify parent component about successful order
+          if (onOrderSuccess) {
+            onOrderSuccess(orderResponse.data._id)
+          }
+          // Dispatch cart changed event
+          window.dispatchEvent(new Event('cartChanged'))
+        } else {
+          // For prepaid, proceed to payment
+          setStep(2)
+          // Initiate payment after short delay
+          setTimeout(() => {
+            initiatePayment(orderResponse.data._id, token)
+          }, 500)
+        }
       } else {
         setError(orderResponse.message || 'Failed to create order')
       }
@@ -146,7 +279,7 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
           key: key,
           amount: amount,
           currency: currency,
-          name: 'TBH Store',
+          name: 'THE WOLF STREET',
           description: 'Order Payment',
           order_id: razorpayOrderId,
           handler: async function (response) {
@@ -212,6 +345,14 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
 
   const handleRetryPayment = () => {
     const token = localStorage.getItem('token')
+    if (!token) {
+      setError('Session expired. Please log in again.')
+      setTimeout(() => {
+        onClose()
+        navigate('/login')
+      }, 2000)
+      return
+    }
     if (orderId && token) {
       initiatePayment(orderId, token)
     }
@@ -240,30 +381,21 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
   }
 
   return (
-    <div className="checkout-modal-overlay" style={{
+    <div className="checkout-fullscreen" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0, 0, 0, 0.6)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: isMobile ? 'flex-end' : 'center',
-      justifyContent: 'center',
+      background: 'white',
       zIndex: 9999,
-      padding: isMobile ? '0' : '20px',
+      overflow: 'auto',
       animation: 'fadeIn 0.2s ease'
     }}>
-      <div className="checkout-modal" style={{
-        background: 'white',
-        borderRadius: isMobile ? '20px 20px 0 0' : '16px',
-        maxWidth: isMobile ? '100%' : '600px',
+      <div className="checkout-content" style={{
         width: '100%',
-        maxHeight: isMobile ? '95vh' : '90vh',
-        overflow: 'auto',
-        position: 'relative',
-        animation: isMobile ? 'slideUpMobile 0.3s ease' : 'slideUp 0.3s ease'
+        height: '100%',
+        position: 'relative'
       }}>
         {/* Close Button */}
         <button
@@ -520,6 +652,146 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
                 </div>
               </div>
 
+              {/* Payment Method Selection */}
+              <div style={{ marginTop: isMobile ? '16px' : '20px' }}>
+                <label style={labelStyle}>Payment Method *</label>
+                <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
+                  <label style={{
+                    flex: 1,
+                    padding: '14px',
+                    border: paymentMethod === 'cod' ? '2px solid #111' : '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    background: paymentMethod === 'cod' ? '#f9fafb' : 'white',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid #d1d5db',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: paymentMethod === 'cod' ? '#111' : 'white'
+                      }}>
+                        {paymentMethod === 'cod' && (
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            background: 'white',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#111' }}>Cash on Delivery</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Pay when you receive your order</div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label style={{
+                    flex: 1,
+                    padding: '14px',
+                    border: paymentMethod === 'prepaid' ? '2px solid #111' : '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    background: paymentMethod === 'prepaid' ? '#f9fafb' : 'white',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="prepaid"
+                      checked={paymentMethod === 'prepaid'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid #d1d5db',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: paymentMethod === 'prepaid' ? '#111' : 'white'
+                      }}>
+                        {paymentMethod === 'prepaid' && (
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            background: 'white',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#111' }}>Prepaid</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Pay now and get free shipping</div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Shipping Options */}
+              {address.pincode.length === 6 && (
+                <div style={{ marginTop: isMobile ? '16px' : '20px' }}>
+
+                  {shippingLoading ? (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px',
+                      background: '#f9fafb',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#6b7280'
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite' }}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="31.4" strokeLinecap="round" />
+                      </svg>
+                      Checking shipping options...
+                    </div>
+                  ) : pincodeServiceable === false ? (
+                    <div style={{
+                      padding: '12px',
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#dc2626'
+                    }}>
+                      Delivery is not available to this pincode. Please try a different pincode.
+                    </div>
+                  ) : pincodeServiceable === true && shippingOptions.length === 0 ? (
+                    <div style={{
+                      padding: '12px',
+                      background: '#fef3c7',
+                      border: '1px solid #f59e0b',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#92400e'
+                    }}>
+                      No shipping options available for this pincode. Please try a different pincode.
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
               {/* Order Summary */}
               <div style={{
                 marginTop: isMobile ? '16px' : '24px',
@@ -527,21 +799,44 @@ const CheckoutModal = ({ isOpen, onClose, cartItems, totalAmount, onOrderSuccess
                 background: '#f9fafb',
                 borderRadius: '12px'
               }}>
-                <div style={{ 
+                <div style={{ marginBottom: '8px' }}>
+                  <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '2px' }}>
+                    {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#374151' }}>
+                    <span>Sub Total</span>
+                    <span>{formatPrice(totalAmount)}</span>
+                  </div>
+                  {paymentMethod === 'cod' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#374151', marginTop: '4px' }}>
+                      <span>Shipping Charg</span>
+                      <span>{formatPrice(90)}</span>
+                    </div>
+                  )}
+                  {paymentMethod === 'prepaid' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
+                      <span>Shipping</span>
+                      <span>Free</span>
+                    </div>
+                    
+                  )}
+                </div>
+                <div style={{
+                  borderTop: '1px solid #e5e7eb',
+                  paddingTop: '8px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '2px' }}>
-                      {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
-                      Order Total
-                    </div>
+                  <div style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
+                    Total Amount
                   </div>
                   <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: '#111' }}>
-                    {formatPrice(totalAmount)}
+                    {formatPrice(
+                      paymentMethod === 'cod'
+                        ? totalAmount + 90
+                        : totalAmount
+                    )}
                   </div>
                 </div>
               </div>

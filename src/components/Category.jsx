@@ -5,7 +5,7 @@ import { isFriday, calculateDiscountedPrice, formatPrice } from '../utils/discou
 
 // This component shows products for the selected category.
 // Categories come from the API via the "category" field:
-// "t-shirt", "shirt", "hoodie", etc. Use "all" to show everything.
+// "oversized-tshirts", "printed-tshirts", "embrodery-tshirt", etc. Use "all" to show everything.
 
 const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
   const [productsData, setProductsData] = useState([])
@@ -15,7 +15,8 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
   const [isFridayDiscount, setIsFridayDiscount] = useState(false)
-  const pageSize = 30 // Products per page
+  const [loadingMore, setLoadingMore] = useState(false)
+  const pageSize = 8 // Products per page
 
   // Check if today is Friday on component mount
   useEffect(() => {
@@ -124,9 +125,9 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
 
   const titleMap = {
     all: 'All Products',
-    't-shirt': 'T‑Shirts',
-    shirt: 'Shirts',
-    hoodie: 'Hoodies',
+    'oversized-tshirts': 'Oversized T-shirts',
+    'printed-tshirts': 'Printed T-shirts',
+    'embrodery-tshirt': 'Embrodery T-shirt',
   }
 
   const heading = titleMap[selectedCategory] || 'Products'
@@ -150,131 +151,49 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
       </section>
     )
   }
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-
-  const renderPagination = () => {
-    if (totalPages <= 1) return null
-
-    const pageNumbers = []
-    const maxVisiblePages = 5
-    
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-    
-    if (endPage - startPage < maxVisiblePages - 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1)
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i)
-    }
+  
+  const renderLoadMore = () => {
+    if (currentPage >= totalPages) return null
 
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '10px',
-          margin: '40px 0',
-          flexWrap: 'wrap',
-        }}
-      >
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={async () => {
+            setLoadingMore(true)
+            try {
+              const nextPage = currentPage + 1
+              let response
+
+              if (selectedCategory === 'all') {
+                response = await getAllProducts(nextPage, pageSize)
+              } else {
+                response = await getProductsByCategory(selectedCategory, nextPage, pageSize)
+              }
+
+              if (response.isSuccess && response.data) {
+                const newProducts = Array.isArray(response.data) ? response.data : response.data.products || []
+                setProductsData(prev => [...prev, ...newProducts])
+                setCurrentPage(nextPage)
+              }
+            } catch (err) {
+              console.error('Error loading more products:', err)
+            } finally {
+              setLoadingMore(false)
+            }
+          }}
+          disabled={loadingMore}
           style={{
-            padding: '8px 16px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            background: currentPage === 1 ? '#f5f5f5' : 'white',
-            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            color: currentPage === 1 ? '#999' : '#333',
-            fontSize: '14px',
+            padding: '10px 30px',
+            color: '#fff',
+            background: '#374151',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: loadingMore ? 'not-allowed' : 'pointer',
+            fontSize: '1em',
+            opacity: loadingMore ? 0.6 : 1,
           }}
         >
-          Previous
-        </button>
-
-        {startPage > 1 && (
-          <>
-            <button
-              onClick={() => handlePageChange(1)}
-              style={{
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                background: 'white',
-                cursor: 'pointer',
-                color: '#333',
-                fontSize: '14px',
-              }}
-            >
-              1
-            </button>
-            {startPage > 2 && <span style={{ padding: '0 5px' }}>...</span>}
-          </>
-        )}
-
-        {pageNumbers.map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => handlePageChange(pageNum)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              background: currentPage === pageNum ? '#333' : 'white',
-              color: currentPage === pageNum ? 'white' : '#333',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: currentPage === pageNum ? 'bold' : 'normal',
-            }}
-          >
-            {pageNum}
-          </button>
-        ))}
-
-        {endPage < totalPages && (
-          <>
-            {endPage < totalPages - 1 && <span style={{ padding: '0 5px' }}>...</span>}
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              style={{
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                background: 'white',
-                cursor: 'pointer',
-                color: '#333',
-                fontSize: '14px',
-              }}
-            >
-              {totalPages}
-            </button>
-          </>
-        )}
-
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          style={{
-            padding: '8px 16px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            background: currentPage === totalPages ? '#f5f5f5' : 'white',
-            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-            color: currentPage === totalPages ? '#999' : '#333',
-            fontSize: '14px',
-          }}
-        >
-          Next
+          {loadingMore ? 'Loading...' : 'View More'}
         </button>
       </div>
     )
@@ -284,11 +203,11 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
     <section className="category-section">
       <h2
         style={{
-          textAlign: 'start',
+          textAlign: 'center',
           color: 'black',
           fontSize: '1.5em',
           fontWeight: 'bold',
-          margin: '40px 0 20px 10px',
+          margin: '40px 0 20px 0',
           textTransform: 'uppercase',
           letterSpacing: '1px',
         }}
@@ -307,16 +226,16 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
         </div>
       ) : (
         <>
-          <section
-            className="products-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '20px 0px',
-              maxWidth: '1200px',
-              margin: '0 auto',
-            }}
-          >
+            <section
+              className="products-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '20px 0px',
+                maxWidth: '1200px',
+                margin: '0 auto',
+              }}
+            >
             {filteredProducts.map((product, index) => (
               <div
                 key={product._id || product.title + index}
@@ -345,7 +264,7 @@ const Category = ({ selectedCategory = 'all', onProductClick = () => {} }) => {
             ))}
           </section>
 
-          {renderPagination()}
+          {renderLoadMore()}
         </>
       )}
     </section>
